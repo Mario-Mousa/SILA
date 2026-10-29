@@ -1,0 +1,32 @@
+## Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userprefs
+
+## ASP.NET Core
+appsettings.Development.json
+!appsettings.json
+*.secrets.json
+
+## Uploads outside git
+wwwroot/uploads/
+uploads/
+
+## OS generated
+.DS_Store
+Thumbs.db
