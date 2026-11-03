@@ -1,0 +1,6 @@
+@model object
+@{
+    // Pass the enum value itself; the visible name stays identical to the enum member.
+    var state = Model?.ToString() ?? string.Empty;
+}
+<span class="status-badge">@state</span>
