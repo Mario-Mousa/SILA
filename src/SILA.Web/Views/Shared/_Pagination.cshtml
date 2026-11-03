@@ -1,0 +1,24 @@
+@{
+    var currentPage = ViewData["CurrentPage"] as int? ?? 1;
+    var totalPages = ViewData["TotalPages"] as int? ?? 1;
+    var action = ViewData["PageAction"] as string ?? "Index";
+    var controller = ViewData["PageController"] as string ?? ViewContext.RouteData.Values["controller"]?.ToString() ?? "Home";
+    var routeValues = ViewData["PageRouteValues"] as IDictionary<string, string> ?? new Dictionary<string, string>();
+}
+@if (totalPages > 1)
+{
+    <nav aria-label="Pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-controller="@controller" asp-action="@action" asp-all-route-data="@routeValues" asp-route-page="@(currentPage - 1)" aria-label="Previous page">Previous</a>
+            </li>
+            @for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++)
+            {
+                <li class="page-item @(pageNumber == currentPage ? "active" : "")"><a class="page-link" asp-controller="@controller" asp-action="@action" asp-all-route-data="@routeValues" asp-route-page="@pageNumber" aria-current="@(pageNumber == currentPage ? "page" : null)">@pageNumber</a></li>
+            }
+            <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                <a class="page-link" asp-controller="@controller" asp-action="@action" asp-all-route-data="@routeValues" asp-route-page="@(currentPage + 1)" aria-label="Next page">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
