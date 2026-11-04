@@ -245,3 +245,4 @@ SILA strictly segregates manufacturing contracts from material purchases. They d
 - **And** a new record is added to `RequestOffer` with RoundNumber = 2;
 - **And** an in-app notification is delivered to the Brand Owner;
 - **And** the Brand Owner's interface unlocks actions: "Accept", "Reject", and "Send Revised Offer".
+

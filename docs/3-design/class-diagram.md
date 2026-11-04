@@ -265,3 +265,4 @@ classDiagram
 3. **Concurrency Token (`RowVersion`):** `MaterialListing` includes a SQL Server timestamp/rowversion byte array column (`RowVersion`) mapped as `[Timestamp]`. During `IMaterialOrderService.ConfirmOrderAsync`, EF Core verifies that the row has not changed between reading available stock and executing deduction.
 4. **Non-Negative Stock Constraint (BR-01):** Physical SQL constraint `CHECK (AvailableQuantity >= 0)` guarantees that simultaneous orders cannot force stock negative.
 5. **Polymorphic Status Audit Logging (BR-08):** `StatusHistory` references either a `ManufacturingRequest` or a `MaterialOrder` using the pair `(RecordType, RecordId)`, accompanied by immutable actor references and timestamps.
+

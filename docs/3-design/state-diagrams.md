@@ -143,3 +143,4 @@ stateDiagram-v2
 | `Confirmed` | `Dispatched` | Supplier | Order is currently `Confirmed` | Zero stock effect |
 | `Dispatched` | `Delivered` | Supplier | Order is currently `Dispatched` | Zero stock effect |
 | `Confirmed` | `Cancelled` | *Any* | **STRICTLY PROHIBITED** | Not allowed |
+

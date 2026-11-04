@@ -144,3 +144,4 @@ flowchart TD
 | **D3** | `MaterialOrders`, `MaterialOrderLines`, `StockMovements` | Contains frozen point-in-time order lines, statuses, totals in EGP, and immutable stock deduction records. Governed by `IMaterialOrderService`. |
 | **D4** | `ManufacturingRequests`, `RequestOffers` | Stores garment manufacturing contracts, target factory references, specs, and complete multi-round price negotiation history. Governed by `IManufacturingRequestService`. |
 | **D5** | `StatusHistories`, `Notifications` | Append-only system audit ledger recording all state transitions across both workflows (BR-08) and targeted user alerts (BR-10). Governed by `IStatusHistoryService` and `INotificationService`. |
+

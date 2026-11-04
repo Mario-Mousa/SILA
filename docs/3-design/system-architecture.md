@@ -182,3 +182,4 @@ flowchart LR
 | **Frontend Framework** | **Bootstrap 5.3 + jQuery** | Rapid, responsive grid implementation; tested compatibility across 1920×1080, 1366×768, and 768×1024 viewports; lightweight unobtrusive client-side validation. | Tailwind CSS (requires Node.js build pipeline overhead); React (see above). |
 | **Email Gateway** | **SMTP (Free-Tier Provider)** | Zero monetary cost; straightforward integration with .NET `MailKit` or `System.Net.Mail` for transactional verification links. | Twilio SMS (ruled out: SMS OTP incurs recurring financial charges). |
 | **Version Control & CI** | **Git & GitHub** | Collaborative branch management (`develop`, `feature/*`, `main`); Pull Request code reviews; integrated GitHub Projects Kanban board. | Azure DevOps (GitHub is universally accessible and required by DEPI). |
+

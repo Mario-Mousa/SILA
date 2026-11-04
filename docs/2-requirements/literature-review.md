@@ -64,3 +64,4 @@ This section records direct feedback, evaluation comments, and required refineme
 | **FB-03** | 27 Oct 2026 | Clarified that factories must be able to negotiate price via counter-offers, but fabric suppliers sell at fixed catalog prices. | Adopted **Decision D-03**: Factories support counter-offers (`CounterOffered` state); raw materials feature strictly fixed catalog unit prices. | **Resolved** |
 | **FB-04** | 27 Oct 2026 | Warned against project scope creep (online payments, shipping integrations, production stage tracking). | Updated **Section 3.3 (Out of Scope)**: Explicitly banned payment gateways, logistics tracking, and shop-floor scheduling to preserve 5-week focus. | **Resolved** |
 | **FB-05** | 28 Oct 2026 | Requested formal Gantt chart and explicit agile sprint definitions matching real dates (28 Oct – 4 Dec). | Generated Mermaid Gantt chart and comprehensive Agile methodology in `docs/1-planning/planning-and-management.md`. | **Resolved** |
+

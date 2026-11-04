@@ -224,3 +224,4 @@ flowchart LR
   - *5a. Brand submits revised offer:* Brand counters with 230 EGP/unit. Status transitions back to `PendingApproval` with Round 3 recorded. Negotiation continues.
   - *5b. Either party rejects:* Status transitions to `Rejected` (final).
 - **Postconditions:** Request reaches a final status (`Accepted` or `Rejected`) with full negotiation rounds preserved.
+
