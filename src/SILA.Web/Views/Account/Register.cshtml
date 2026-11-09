@@ -1,0 +1,92 @@
+@using SILA.Web.Models.Enums
+@model SILA.Web.Models.ViewModels.Account.RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card p-4 p-md-5">
+            <div class="text-center mb-4">
+                <h1 class="h3 fw-bold" style="color: var(--sila-forest);">Join SILA</h1>
+                <p class="text-muted">Register your business on Egypt's apparel supply network</p>
+            </div>
+
+            <partial name="_ValidationSummary" />
+
+            <form asp-controller="Account" asp-action="Register" method="post" novalidate>
+                <div class="mb-3">
+                    <label asp-for="Role" class="form-label"></label>
+                    <select asp-for="Role" class="form-select" aria-describedby="roleHelp">
+                        <option value="">-- Choose your business type --</option>
+                        <option value="@OrganizationType.Brand">Brand Owner (Clothing brand / Designer)</option>
+                        <option value="@OrganizationType.Factory">Factory Owner (Garment manufacturer)</option>
+                        <option value="@OrganizationType.Supplier">Supplier (Raw fabric / Materials)</option>
+                    </select>
+                    <span asp-validation-for="Role" class="field-validation-error"></span>
+                    <div id="roleHelp" class="form-text">Choose the role matching your primary business activity.</div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-7">
+                        <label asp-for="OrganizationName" class="form-label"></label>
+                        <input asp-for="OrganizationName" class="form-control" placeholder="e.g. Nile Garments" />
+                        <span asp-validation-for="OrganizationName" class="field-validation-error"></span>
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <label asp-for="City" class="form-label"></label>
+                        <input asp-for="City" class="form-control" placeholder="e.g. Cairo, Alexandria" />
+                        <span asp-validation-for="City" class="field-validation-error"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4" style="border-color: var(--sila-line);" />
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" placeholder="Your full personal name" />
+                    <span asp-validation-for="FullName" class="field-validation-error"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-7">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="business@example.com" />
+                        <span asp-validation-for="Email" class="field-validation-error"></span>
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="01xxxxxxxxx" />
+                        <span asp-validation-for="PhoneNumber" class="field-validation-error"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="field-validation-error"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+                    </div>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                </div>
+
+                <div class="text-center text-muted small">
+                    Already have an account? <a asp-controller="Account" asp-action="Login">Sign in here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
