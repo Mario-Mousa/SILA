@@ -1,0 +1,73 @@
+@model SILA.Web.Models.ViewModels.Account.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+    var infoMessage = TempData["InfoMessage"] as string;
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-5">
+        <div class="card p-4 p-md-5">
+            <div class="text-center mb-4">
+                <h1 class="h3 fw-bold" style="color: var(--sila-forest);">Sign in to SILA</h1>
+                <p class="text-muted">Enter your credentials to access your organization workspace</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(infoMessage))
+            {
+                <div class="alert alert-info" role="alert">
+                    @infoMessage
+                </div>
+            }
+
+            <partial name="_ValidationSummary" />
+
+            @if (ViewBag.ShowResendConfirmation == true)
+            {
+                <div class="alert alert-warning mb-4" role="alert">
+                    <p class="mb-2 fw-semibold">Email confirmation is pending for <strong>@ViewBag.UnconfirmedEmail</strong>.</p>
+                    <p class="mb-3 small">You cannot sign in until your email is confirmed. Did not receive the link?</p>
+                    <form asp-controller="Account" asp-action="ResendConfirmationEmail" method="post" class="d-inline">
+                        <input type="hidden" name="Email" value="@ViewBag.UnconfirmedEmail" />
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Resend Confirmation Email</button>
+                    </form>
+                </div>
+            }
+
+            <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl" method="post" novalidate>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="name@example.com" autofocus />
+                    <span asp-validation-for="Email" class="field-validation-error"></span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label asp-for="Password" class="form-label mb-0"></label>
+                    </div>
+                    <input asp-for="Password" class="form-control mt-1" />
+                    <span asp-validation-for="Password" class="field-validation-error"></span>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label text-muted"></label>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top" style="border-color: var(--sila-line) !important;">
+                    <span>New to SILA? <a asp-controller="Account" asp-action="Register">Create an account</a></span>
+                    <a asp-controller="Account" asp-action="ResendConfirmationEmail">Resend verification</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

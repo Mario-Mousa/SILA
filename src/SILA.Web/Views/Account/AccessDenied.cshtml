@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-7 col-lg-6">
+        <div class="card p-4 p-md-5 text-center">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 72px; height: 72px; background: #fff4f2; color: #b42318;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h1 class="h3 fw-bold mb-3 text-danger">Access Denied</h1>
+            
+            <p class="text-muted mb-4">
+                You do not have the required permissions or role authorization to view or interact with this resource.
+            </p>
+
+            <div class="alert alert-light border text-start p-3 mb-4" style="background-color: var(--sila-sand); border-color: var(--sila-line) !important;">
+                <p class="mb-1 small fw-semibold">Why am I seeing this?</p>
+                <ul class="mb-0 ps-3 small text-muted">
+                    <li>This area is restricted to a different organization role (Brand Owner, Factory Owner, Supplier, or Admin).</li>
+                    <li>SILA strictly enforces record-level and role-based authorization (BR-07).</li>
+                </ul>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Return to Home</a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">My Dashboard</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">Sign In</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
