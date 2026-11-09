@@ -1,0 +1,50 @@
+@using SILA.Web.Models.Enums
+@{
+    ViewData["Title"] = "Account Verification Notice";
+    var orgName = ViewBag.OrganizationName as string ?? "Your Organization";
+    var role = ViewBag.Role as string ?? "Business";
+    var status = (VerificationStatus)(ViewBag.VerificationStatus ?? VerificationStatus.Unverified);
+    var note = ViewBag.VerificationNote as string;
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-7">
+        <div class="card p-4 p-md-5 text-center">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 72px; height: 72px; background: #fef7ec; color: #b54708;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <partial name="_StatusBadge" model="status" />
+            </div>
+
+            <h1 class="h3 fw-bold mb-2" style="color: var(--sila-forest);">@orgName is @status</h1>
+            <p class="text-muted mb-4">Role: <strong>@role</strong> · Egyptian Fashion B2B Network</p>
+
+            <div class="alert alert-light border text-start p-3 mb-4" style="background-color: var(--sila-sand); border-color: var(--sila-line) !important;">
+                <h6 class="fw-bold mb-2">Account Capabilities & Restrictions (Part 4.1):</h6>
+                <ul class="mb-3 ps-3 small text-muted">
+                    <li><strong class="text-success">Allowed:</strong> You can browse verified factories and fabric suppliers, view product listings, and edit your organization profile.</li>
+                    <li><strong class="text-danger">Gated until Verified:</strong> You cannot submit Manufacturing Requests, place Material Orders, or publish catalog listings.</li>
+                </ul>
+
+                @if (!string.IsNullOrWhiteSpace(note))
+                {
+                    <div class="p-2 border rounded bg-white small text-danger mt-2">
+                        <strong>Admin Feedback:</strong> @note
+                    </div>
+                }
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                <a asp-controller="Profile" asp-action="Index" class="btn btn-primary">Complete Profile & Upload Verification</a>
+                <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">Continue to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+

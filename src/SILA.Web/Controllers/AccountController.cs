@@ -12,6 +12,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SILA.Web.Data;
 using SILA.Web.Models.Entities;
 using SILA.Web.Models.Enums;
@@ -349,7 +350,33 @@ public class AccountController : Controller
         await _signInManager.SignInAsync(user, isPersistent: model.RememberMe);
         _logger.LogInformation("User {Email} logged in successfully", user.Email);
 
+        // Display clear unverified account notice for new/unverified organizations (T2.1 requirement, Part 4.1)
+        var org = await _context.Organizations.FirstOrDefaultAsync(o => o.OwnerUserId == user.Id);
+        if (org != null && org.VerificationStatus == VerificationStatus.Unverified)
+        {
+            TempData["UnverifiedNotice"] = "Notice: Your account is currently Unverified. You can browse and manage your profile, but transactions (Orders, Requests, Listings) require Admin verification.";
+        }
+
         return await RedirectToRoleHomeAsync(user, returnUrl);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> UnverifiedNotice()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        var org = await _context.Organizations.FirstOrDefaultAsync(o => o.OwnerUserId == user.Id);
+        ViewBag.OrganizationName = org?.Name ?? "Your Organization";
+        ViewBag.Role = org?.Type.ToString() ?? "Business";
+        ViewBag.VerificationStatus = org?.VerificationStatus ?? VerificationStatus.Unverified;
+        ViewBag.VerificationNote = org?.VerificationNote;
+
+        return View();
     }
 
     [HttpPost]

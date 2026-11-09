@@ -18,7 +18,14 @@
                 </div>
 
                 <h1 class="h3 fw-bold mb-3" style="color: var(--sila-forest);">Email Verified!</h1>
-                <p class="text-muted mb-4">@(message ?? "Your email has been confirmed successfully.")</p>
+                <p class="text-muted mb-3">@(message ?? "Your email has been confirmed successfully.")</p>
+                
+                <div class="alert alert-light border text-start p-3 mb-4 mx-auto" style="max-width: 440px; background-color: var(--sila-sand); border-color: var(--sila-line) !important;">
+                    <div class="small text-muted">
+                        <strong>Account Status: Unverified</strong><br />
+                        Your account is now active. Sign in to browse the marketplace and submit your business verification documents for Admin review.
+                    </div>
+                </div>
 
                 <div class="d-grid gap-2 col-sm-8 mx-auto">
                     <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg">Sign In to SILA</a>
