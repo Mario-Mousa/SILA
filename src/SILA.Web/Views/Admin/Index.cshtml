@@ -1,0 +1,91 @@
+@model SILA.Web.Models.ViewModels.Admin.AdminPendingListViewModel
+@{
+    ViewData["Title"] = "Admin - Verification Review Queue";
+    var successMsg = TempData["SuccessMessage"] as string;
+}
+
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">Organization Verification Queue</h1>
+            <p class="text-muted mb-0">Review pending business registrations and verify legal/ownership documents (D-02, Part 4.1)</p>
+        </div>
+        <div>
+            <span class="badge bg-primary fs-6 px-3 py-2">Pending: @Model.TotalPendingCount</span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(successMsg))
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            @successMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.PendingOrganizations.Any())
+    {
+        <div class="card p-5 text-center">
+            <div class="mb-3 text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                </svg>
+            </div>
+            <h3 class="h5 fw-bold">All Caught Up!</h3>
+            <p class="text-muted mb-0">There are no organization verification requests currently awaiting review.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Organization</th>
+                            <th>Role</th>
+                            <th>Owner Contact</th>
+                            <th>City</th>
+                            <th>Documents</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var org in Model.PendingOrganizations)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">@org.Name</div>
+                                    <small class="text-muted">ID: #@org.Id · Registered @org.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@org.Type</span>
+                                </td>
+                                <td>
+                                    <div>@(org.OwnerUser?.FullName ?? "N/A")</div>
+                                    <small class="text-muted">@(org.OwnerUser?.Email ?? "N/A") · @org.ContactPhone</small>
+                                </td>
+                                <td>@org.City</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        @org.VerificationDocuments.Count document(s)
+                                    </span>
+                                </td>
+                                <td>
+                                    <partial name="_StatusBadge" model="org.VerificationStatus" />
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Review" asp-route-id="@org.Id" class="btn btn-sm btn-primary">
+                                        Review Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+

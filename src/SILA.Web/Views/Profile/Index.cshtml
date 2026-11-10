@@ -1,0 +1,210 @@
+@using SILA.Web.Models.Enums
+@model SILA.Web.Models.ViewModels.Profile.ProfileViewModel
+@{
+    ViewData["Title"] = "Organization Profile";
+    var successMsg = TempData["SuccessMessage"] as string;
+    var errorMsg = TempData["ErrorMessage"] as string;
+}
+
+<div class="container py-2">
+    @if (!string.IsNullOrEmpty(successMsg))
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            @successMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMsg))
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            @errorMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Profile Header Card -->
+    <div class="card p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                @if (!string.IsNullOrEmpty(Model.LogoPath))
+                {
+                    <img src="@Model.LogoPath" alt="@Model.Name logo" class="rounded-circle border" style="width: 64px; height: 64px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle border" style="width: 64px; height: 64px; background: var(--sila-sand); color: var(--sila-forest); font-weight: bold; font-size: 1.5rem;">
+                        @Model.Name.FirstOrDefault()
+                    </div>
+                }
+
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h1 class="h3 fw-bold mb-0" style="color: var(--sila-forest);">@Model.Name</h1>
+                        <span class="badge bg-secondary">@Model.Role</span>
+                        <partial name="_StatusBadge" model="Model.VerificationStatus" />
+                    </div>
+                    <p class="text-muted mb-0 small mt-1">
+                        Owner: <strong>@Model.OwnerFullName</strong> (@Model.OwnerEmail) · City: <strong>@Model.City</strong> · Phone: <strong>@Model.ContactPhone</strong>
+                    </p>
+                </div>
+            </div>
+
+            <div>
+                <a asp-action="Edit" class="btn btn-outline-primary">Edit Profile</a>
+            </div>
+        </div>
+
+        @if (Model.VerificationStatus == VerificationStatus.Unverified)
+        {
+            <div class="alert alert-warning mt-4 mb-0" role="alert">
+                <h6 class="fw-bold mb-1">Account is Unverified</h6>
+                <p class="mb-2 small">To create orders, submit requests, or publish listings, you must submit your verification documents for Admin review.</p>
+                <a href="#upload-section" class="btn btn-primary btn-sm">Upload Verification Document</a>
+            </div>
+        }
+        else if (Model.VerificationStatus == VerificationStatus.PendingReview)
+        {
+            <div class="alert alert-info mt-4 mb-0" role="alert">
+                <h6 class="fw-bold mb-1">Verification Under Review</h6>
+                <p class="mb-0 small">Your submitted documents are currently being reviewed by the SILA Administration. You will be notified once a decision is made.</p>
+            </div>
+        }
+        else if (Model.VerificationStatus == VerificationStatus.Rejected)
+        {
+            <div class="alert alert-danger mt-4 mb-0" role="alert">
+                <h6 class="fw-bold mb-1">Verification Rejected</h6>
+                <p class="mb-1 small">The administrator rejected your verification with the following note:</p>
+                <div class="p-2 border rounded bg-white small mb-2">@Model.VerificationNote</div>
+                <p class="mb-0 small">Please review the note, update your profile or upload updated documents below to re-submit for review.</p>
+            </div>
+        }
+    </div>
+
+    <div class="row g-4">
+        <!-- Profile Details Column -->
+        <div class="col-12 col-lg-6">
+            <div class="card p-4 h-100">
+                <h2 class="h5 fw-bold mb-3" style="color: var(--sila-forest);">Business Details</h2>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small mb-0">Business Description</label>
+                    <p class="mb-0">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided yet." : Model.Description)</p>
+                </div>
+
+                @if (Model.Role == OrganizationType.Brand)
+                {
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-0">Instagram / Social Portfolio</label>
+                        <p class="mb-0">
+                            @if (!string.IsNullOrWhiteSpace(Model.InstagramUrl))
+                            {
+                                <a href="@Model.InstagramUrl" target="_blank" rel="noopener noreferrer">@Model.InstagramUrl</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No link provided (Part 4.1 verification requirement).</span>
+                            }
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-0">Portfolio & Past Collections</label>
+                        <p class="mb-0">@(string.IsNullOrWhiteSpace(Model.PortfolioText) ? "No portfolio text provided." : Model.PortfolioText)</p>
+                    </div>
+                }
+                else if (Model.Role == OrganizationType.Factory)
+                {
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-0">Physical Factory Address</label>
+                        <p class="mb-0">@(string.IsNullOrWhiteSpace(Model.Address) ? "No factory address provided (required for verification)." : Model.Address)</p>
+                    </div>
+                }
+
+                <div class="mt-auto pt-3 border-top small text-muted">
+                    <span>Member since: @Model.CreatedAt.ToString("dd MMMM yyyy")</span>
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <span class="ms-3">Last updated: @Model.UpdatedAt.Value.ToString("dd MMMM yyyy HH:mm")</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Documents Column -->
+        <div class="col-12 col-lg-6">
+            <div class="card p-4 h-100" id="upload-section">
+                <h2 class="h5 fw-bold mb-3" style="color: var(--sila-forest);">Verification Documents</h2>
+
+                @if (!Model.Documents.Any())
+                {
+                    <p class="text-muted small mb-4">No verification documents have been uploaded yet.</p>
+                }
+                else
+                {
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Document Type</th>
+                                    <th>Uploaded At</th>
+                                    <th>File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var doc in Model.Documents)
+                                {
+                                    <tr>
+                                        <td><span class="fw-semibold">@doc.DocumentType</span></td>
+                                        <td class="small text-muted">@doc.UploadedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            <a href="@doc.FilePath" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2">View</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <div class="border rounded p-3 mt-auto" style="background-color: var(--sila-sand);">
+                    <h6 class="fw-bold mb-2">Upload Verification Proof (Part 4.1)</h6>
+                    <form asp-action="UploadDocument" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="OrganizationId" value="@Model.OrganizationId" />
+
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Document Category</label>
+                            <select name="DocumentType" class="form-select form-select-sm" required>
+                                @if (Model.Role == OrganizationType.Brand)
+                                {
+                                    <option value="Brand Ownership / Instagram Link Proof">Brand Ownership / Instagram Link Proof</option>
+                                    <option value="Design Portfolio Work Samples">Design Portfolio Work Samples</option>
+                                    <option value="Commercial Register / Tax ID">Commercial Register / Tax ID (Optional)</option>
+                                }
+                                else if (Model.Role == OrganizationType.Factory)
+                                {
+                                    <option value="Factory Industrial License">Factory Industrial License</option>
+                                    <option value="Workshop Commercial Register">Workshop Commercial Register</option>
+                                    <option value="Factory Location & Workshop Proof">Factory Location & Workshop Proof</option>
+                                }
+                                else
+                                {
+                                    <option value="Proof of Fabric Supplier">Proof of Fabric / Textile Supplier</option>
+                                    <option value="Commercial Register / Tax Card">Commercial Register / Tax Card</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small mb-1">Select File (.pdf, .png, .jpg, max 5MB)</label>
+                            <input type="file" name="File" class="form-control form-control-sm" accept=".pdf,.png,.jpg,.jpeg" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Upload & Submit for Review</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
