@@ -1,15 +1,17 @@
 // ═══════════ HANDOFF ═══════════════════════════════════
-// Task:        T1.2 | Owner: P1 | Status: DONE
-// What exists: Empty service shell for Organization profiles and directory queries
-// What is left: // TODO(T2.2): Implement OrganizationService with profile updates and directory filters
-// Depends on:  T1.1 (Organization entity, OrganizationType enum)
-// Used by:     T2.2, T2.3, T3.1, T3.3
-// How to test: Build project; stub throws NotImplementedException until implemented in T2.2
-// Notes:       P2 owns implementation in T2.2
+// Task:        T2.2 | Owner: P2 | Status: DONE
+// What exists: Full implementation of IOrganizationService: profiles retrieval, role-specific profile updates, verified directory lookups with pagination and search, and verification check helper
+// What is left: none
+// Depends on:  T1.1 (Organization, VerificationDocument, Enums, ApplicationDbContext)
+// Used by:     ProfileController, AdminController, T2.3 (Browse Factories/Suppliers), T3.1, T3.3
+// How to test: Query profiles by Id / UserId; update profile fields; verify GetFactoriesAsync/GetSuppliersAsync only return Verified organizations
+// Notes:       Public browse methods strictly enforce VerificationStatus == Verified (D-12, Part 4.1)
 // ═══════════════════════════════════════════════════════
 
+using Microsoft.EntityFrameworkCore;
 using SILA.Web.Data;
 using SILA.Web.Models.Entities;
+using SILA.Web.Models.Enums;
 using SILA.Web.Services.Interfaces;
 
 namespace SILA.Web.Services.Implementations;
@@ -23,40 +25,134 @@ public class OrganizationService : IOrganizationService
         _context = context;
     }
 
-    public Task<Organization?> GetByIdAsync(int id)
+    public async Task<Organization?> GetByIdAsync(int id)
     {
-        // TODO(T2.2): Implement query by Id with related verification status
-        throw new NotImplementedException("TODO(T2.2): Implement OrganizationService.GetByIdAsync");
+        return await _context.Organizations
+            .Include(o => o.OwnerUser)
+            .Include(o => o.VerificationDocuments)
+            .FirstOrDefaultAsync(o => o.Id == id);
     }
 
-    public Task<Organization?> GetByUserIdAsync(string userId)
+    public async Task<Organization?> GetByUserIdAsync(string userId)
     {
-        // TODO(T2.2): Implement query by OwnerUserId
-        throw new NotImplementedException("TODO(T2.2): Implement OrganizationService.GetByUserIdAsync");
+        return await _context.Organizations
+            .Include(o => o.OwnerUser)
+            .Include(o => o.VerificationDocuments)
+            .FirstOrDefaultAsync(o => o.OwnerUserId == userId);
     }
 
-    public Task<bool> UpdateProfileAsync(Organization organization)
+    public async Task<bool> UpdateProfileAsync(Organization organization)
     {
-        // TODO(T2.2): Implement organization profile update with role-specific fields
-        throw new NotImplementedException("TODO(T2.2): Implement OrganizationService.UpdateProfileAsync");
+        var existing = await _context.Organizations.FirstOrDefaultAsync(o => o.Id == organization.Id);
+        if (existing == null)
+        {
+            return false;
+        }
+
+        // Common profile fields
+        existing.Name = organization.Name.Trim();
+        existing.City = organization.City.Trim();
+        existing.ContactPhone = organization.ContactPhone.Trim();
+        existing.Description = organization.Description?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(organization.LogoPath))
+        {
+            existing.LogoPath = organization.LogoPath;
+        }
+
+        // Role-specific fields
+        switch (existing.Type)
+        {
+            case OrganizationType.Brand:
+                existing.InstagramUrl = organization.InstagramUrl?.Trim();
+                existing.PortfolioText = organization.PortfolioText?.Trim();
+                break;
+
+            case OrganizationType.Factory:
+                existing.Address = organization.Address?.Trim();
+                break;
+
+            case OrganizationType.Supplier:
+                // Supplier only uses description, phone, city
+                break;
+        }
+
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        _context.Organizations.Update(existing);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
-    public Task<(IEnumerable<Organization> Items, int TotalCount)> GetFactoriesAsync(string? search = null, string? city = null, int page = 1, int pageSize = 10)
+    public async Task<(IEnumerable<Organization> Items, int TotalCount)> GetFactoriesAsync(
+        string? search = null,
+        string? city = null,
+        int page = 1,
+        int pageSize = 10)
     {
-        // TODO(T2.2): Implement paginated query for verified Factory organizations
-        throw new NotImplementedException("TODO(T2.2): Implement OrganizationService.GetFactoriesAsync");
+        // Public directory query: ONLY verified Factory organizations (Part 4.1, T2.3 dependency)
+        var query = _context.Organizations
+            .AsNoTracking()
+            .Where(o => o.Type == OrganizationType.Factory && o.VerificationStatus == VerificationStatus.Verified);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(o => o.Name.ToLower().Contains(term) || (o.Description != null && o.Description.ToLower().Contains(term)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            var cityTerm = city.Trim().ToLower();
+            query = query.Where(o => o.City.ToLower().Contains(cityTerm));
+        }
+
+        int totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(o => o.Name)
+            .Skip((Math.Max(1, page) - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
     }
 
-    public Task<(IEnumerable<Organization> Items, int TotalCount)> GetSuppliersAsync(string? search = null, string? city = null, int page = 1, int pageSize = 10)
+    public async Task<(IEnumerable<Organization> Items, int TotalCount)> GetSuppliersAsync(
+        string? search = null,
+        string? city = null,
+        int page = 1,
+        int pageSize = 10)
     {
-        // TODO(T2.2): Implement paginated query for verified Supplier organizations
-        throw new NotImplementedException("TODO(T2.2): Implement OrganizationService.GetSuppliersAsync");
+        // Public directory query: ONLY verified Supplier organizations (Part 4.1, T2.3 dependency)
+        var query = _context.Organizations
+            .AsNoTracking()
+            .Where(o => o.Type == OrganizationType.Supplier && o.VerificationStatus == VerificationStatus.Verified);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(o => o.Name.ToLower().Contains(term) || (o.Description != null && o.Description.ToLower().Contains(term)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            var cityTerm = city.Trim().ToLower();
+            query = query.Where(o => o.City.ToLower().Contains(cityTerm));
+        }
+
+        int totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(o => o.Name)
+            .Skip((Math.Max(1, page) - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
     }
 
-    public Task<bool> IsVerifiedAsync(int organizationId)
+    public async Task<bool> IsVerifiedAsync(int organizationId)
     {
-        // TODO(T2.2): Implement verification check against VerificationStatus.Verified
-        throw new NotImplementedException("TODO(T2.2): Implement OrganizationService.IsVerifiedAsync");
+        return await _context.Organizations
+            .AnyAsync(o => o.Id == organizationId && o.VerificationStatus == VerificationStatus.Verified);
     }
 }
-
