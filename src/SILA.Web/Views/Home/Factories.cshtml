@@ -1,0 +1,172 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: Public directory of Verified Clothing Factories with keyword search, city filter, and pagination
+   What is left: // TODO(T3.3): Link factory card directly to Manufacturing Request submission form
+   Depends on:  T1.1 (Organization, VerificationStatus), T2.2 (IOrganizationService.GetFactoriesAsync), T1.3 (_Pagination, _StatusBadge)
+   Used by:     Public visitors, Brand Owners looking to produce apparel
+   How to test: Visit /Home/Factories; test search, city filter, and verify unverified factories never appear
+   Notes:       Enforces Part 4.1 & T2.3 Acceptance Criteria: only VerificationStatus.Verified factories are displayed
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.Enums
+@model SILA.Web.Models.ViewModels.Home.BrowseOrganizationsViewModel
+@{
+    ViewData["Title"] = "Verified Clothing Factories";
+}
+
+<!-- Page Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Factories</li>
+            </ol>
+        </nav>
+        <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">Verified Clothing Factories</h1>
+        <p class="text-muted mb-0">Discover verified Egyptian apparel manufacturers ready for your custom production requests</p>
+    </div>
+    <div>
+        <a asp-controller="Home" asp-action="Suppliers" class="btn btn-outline-primary btn-sm">
+            Looking for Suppliers? &rarr;
+        </a>
+    </div>
+</div>
+
+<!-- Search & City Filter Bar -->
+<div class="card p-3 p-md-4 mb-4 border-0 shadow-sm bg-sand-light">
+    <form method="get" asp-controller="Home" asp-action="Factories" class="row g-3 align-items-end">
+        <div class="col-12 col-md-6 col-lg-5">
+            <label for="search" class="form-label small fw-semibold">Search Factory Name or Specialties</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">🔍</span>
+                <input type="text" id="search" name="search" class="form-control border-start-0" 
+                       placeholder="e.g. Delta Garments, Denim, T-shirts..." value="@Model.SearchTerm" />
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 col-lg-4">
+            <label for="city" class="form-label small fw-semibold">City / Governorate</label>
+            <input type="text" id="city" name="city" class="form-control" 
+                   placeholder="e.g. 10th of Ramadan, Obour, Alexandria..." value="@Model.SelectedCity" />
+        </div>
+
+        <div class="col-12 col-md-2 col-lg-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Filter
+            </button>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+            {
+                <a asp-controller="Home" asp-action="Factories" class="btn btn-outline-secondary" title="Clear Filters">
+                    Reset
+                </a>
+            }
+        </div>
+    </form>
+</div>
+
+<!-- Active Results Summary -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="small text-muted">
+        Showing <strong>@Model.Organizations.Count()</strong> of <strong>@Model.TotalCount</strong> verified factor@(Model.TotalCount == 1 ? "y" : "ies")
+    </span>
+    @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+    {
+        <span class="badge bg-sand text-muted small">
+            Filtered by: @(Model.SearchTerm ?? "") @(Model.SelectedCity != null ? $"({Model.SelectedCity})" : "")
+        </span>
+    }
+</div>
+
+<!-- Factory Grid -->
+@if (Model.Organizations.Any())
+{
+    <div class="row g-4">
+        @foreach (var factory in Model.Organizations)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 p-4 border-0 shadow-sm sila-directory-card d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="org-avatar-box">
+                                <span class="fs-4">🏭</span>
+                            </div>
+                            <div>
+                                <h2 class="h5 fw-bold mb-0 text-truncate" style="max-width: 13rem;" title="@factory.Name">
+                                    @factory.Name
+                                </h2>
+                                <span class="small text-muted">📍 @(string.IsNullOrWhiteSpace(factory.City) ? "Egypt" : factory.City)</span>
+                            </div>
+                        </div>
+                        <partial name="_StatusBadge" model="VerificationStatus.Verified" />
+                    </div>
+
+                    <p class="text-muted small flex-grow-1 mb-3">
+                        @(string.IsNullOrWhiteSpace(factory.Description) 
+                            ? "Verified garment manufacturing facility specialized in high-volume apparel cutting, stitching, and finishing." 
+                            : factory.Description)
+                    </p>
+
+                    @if (!string.IsNullOrWhiteSpace(factory.Address))
+                    {
+                        <div class="small text-muted mb-2">
+                            <span class="fw-semibold">Address:</span> @factory.Address
+                        </div>
+                    }
+
+                    <hr class="my-2" style="border-color: var(--sila-line);" />
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 mt-auto">
+                        <div class="small text-muted">
+                            @if (!string.IsNullOrWhiteSpace(factory.ContactPhone))
+                            {
+                                <span>📞 @factory.ContactPhone</span>
+                            }
+                        </div>
+                        @if (User.IsInRole("Brand"))
+                        {
+                            <a asp-controller="Requests" asp-action="Create" asp-route-factoryId="@factory.Id" class="btn btn-sm btn-primary">
+                                Send Request &rarr;
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Home" asp-action="RoleChoice" asp-route-actionType="Register" asp-route-role="Brand" class="btn btn-sm btn-outline-primary">
+                                Work With Factory &rarr;
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    <partial name="_Pagination" />
+}
+else
+{
+    <!-- Empty State -->
+    <div class="card p-5 text-center border-0 shadow-sm my-4">
+        <div class="mb-3 fs-1 text-muted">🏭</div>
+        <h3 class="h5 fw-bold mb-2">No Verified Factories Found</h3>
+        <p class="text-muted mx-auto mb-4" style="max-width: 32rem;">
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+            {
+                <span>No verified factories match your current filter criteria ("@Model.SearchTerm @Model.SelectedCity"). Try broadening your search or resetting filters.</span>
+            }
+            else
+            {
+                <span>There are currently no verified factories listed in the public directory. New factory licenses are validated by Admin before listings appear.</span>
+            }
+        </p>
+        <div>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+            {
+                <a asp-controller="Home" asp-action="Factories" class="btn btn-outline-primary me-2">Clear Filters</a>
+            }
+            <a asp-controller="Account" asp-action="Register" asp-route-role="Factory" class="btn btn-primary">
+                Are you a factory owner? Register here
+            </a>
+        </div>
+    </div>
+}

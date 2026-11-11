@@ -1,36 +1,89 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: Responsive role-aware Sign-up page with dynamic role-specific onboarding fields (Brand, Factory, Supplier)
+   What is left: none
+   Depends on:  T2.1 (AccountController.Register POST, RegisterViewModel), T1.3 (UI guidelines)
+   Used by:     New Brand Owners, Factory Owners, and Suppliers registering on SILA
+   How to test: Visit /Account/Register, /Account/Register?role=Brand, /Account/Register?role=Factory, /Account/Register?role=Supplier; test switching roles and client-side validation
+   Notes:       Conforms to wireframes.md lines 100-138; provides role-specific guidance and verification prerequisites
+   ═══════════════════════════════════════════════════════ *@
 @using SILA.Web.Models.Enums
 @model SILA.Web.Models.ViewModels.Account.RegisterViewModel
 @{
     ViewData["Title"] = "Create Account";
 }
 
-<div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-6">
-        <div class="card p-4 p-md-5">
+<div class="row justify-content-center py-2">
+    <div class="col-12 col-md-10 col-lg-8">
+        <div class="card p-4 p-md-5 border-0 shadow-sm">
             <div class="text-center mb-4">
-                <h1 class="h3 fw-bold" style="color: var(--sila-forest);">Join SILA</h1>
-                <p class="text-muted">Register your business on Egypt's apparel supply network</p>
+                <span class="badge sila-eyebrow mb-2">SILA · Business Registration</span>
+                <h1 class="h3 fw-bold" style="color: var(--sila-forest);">Join SILA Supply Network</h1>
+                <p class="text-muted">Register your organization to start connecting with Egyptian apparel partners</p>
             </div>
 
             <partial name="_ValidationSummary" />
 
-            <form asp-controller="Account" asp-action="Register" method="post" novalidate>
-                <div class="mb-3">
-                    <label asp-for="Role" class="form-label"></label>
-                    <select asp-for="Role" class="form-select" aria-describedby="roleHelp">
-                        <option value="">-- Choose your business type --</option>
-                        <option value="@OrganizationType.Brand">Brand Owner (Clothing brand / Designer)</option>
-                        <option value="@OrganizationType.Factory">Factory Owner (Garment manufacturer)</option>
-                        <option value="@OrganizationType.Supplier">Supplier (Raw fabric / Materials)</option>
-                    </select>
-                    <span asp-validation-for="Role" class="field-validation-error"></span>
-                    <div id="roleHelp" class="form-text">Choose the role matching your primary business activity.</div>
+            <form asp-controller="Account" asp-action="Register" method="post" id="registrationForm" novalidate>
+                <!-- Role Selection Selector -->
+                <div class="mb-4">
+                    <label class="form-label d-block fw-bold text-center mb-2">Select Your Organization Role</label>
+                    <div class="row g-2 justify-content-center" id="roleSelectorCards">
+                        <div class="col-12 col-sm-4">
+                            <label class="role-pill-card p-3 border rounded-3 d-flex flex-column align-items-center text-center cursor-pointer @(Model.Role == OrganizationType.Brand ? "active-role" : "")" for="optBrand">
+                                <input type="radio" class="d-none" name="Role" id="optBrand" value="@OrganizationType.Brand" @(Model.Role == OrganizationType.Brand ? "checked" : "") />
+                                <span class="fs-3 mb-1">👗</span>
+                                <span class="fw-bold small">Brand Owner</span>
+                                <span class="text-muted very-small">Clothing brand / Designer</span>
+                            </label>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label class="role-pill-card p-3 border rounded-3 d-flex flex-column align-items-center text-center cursor-pointer @(Model.Role == OrganizationType.Factory ? "active-role" : "")" for="optFactory">
+                                <input type="radio" class="d-none" name="Role" id="optFactory" value="@OrganizationType.Factory" @(Model.Role == OrganizationType.Factory ? "checked" : "") />
+                                <span class="fs-3 mb-1">🏭</span>
+                                <span class="fw-bold small">Factory Owner</span>
+                                <span class="text-muted very-small">Garment manufacturer</span>
+                            </label>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label class="role-pill-card p-3 border rounded-3 d-flex flex-column align-items-center text-center cursor-pointer @(Model.Role == OrganizationType.Supplier ? "active-role" : "")" for="optSupplier">
+                                <input type="radio" class="d-none" name="Role" id="optSupplier" value="@OrganizationType.Supplier" @(Model.Role == OrganizationType.Supplier ? "checked" : "") />
+                                <span class="fs-3 mb-1">🧵</span>
+                                <span class="fw-bold small">Supplier</span>
+                                <span class="text-muted very-small">Fabric & materials</span>
+                            </label>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Role" class="field-validation-error d-block text-center mt-2"></span>
                 </div>
 
+                <!-- Role Specific Verification Banner & Dynamic Guidance -->
+                <div id="brandGuidance" class="role-guidance-box alert alert-info mb-4 @(Model.Role == OrganizationType.Brand ? "" : "d-none")">
+                    <h6 class="fw-bold mb-1">👗 Brand Owner Onboarding Notes</h6>
+                    <p class="small mb-0">
+                        Brand verification requires any proof of brand ownership (e.g. your active Instagram brand page, website, or previous lookbook/portfolio). You can submit these details right after confirming your email from your Profile.
+                    </p>
+                </div>
+
+                <div id="factoryGuidance" class="role-guidance-box alert alert-warning mb-4 @(Model.Role == OrganizationType.Factory ? "" : "d-none")">
+                    <h6 class="fw-bold mb-1">🏭 Factory Owner Onboarding Notes</h6>
+                    <p class="small mb-0">
+                        Factory verification requires your factory address/industrial zone location and an official factory operating license (PDF/JPG document). You will upload these during profile setup before receiving production requests.
+                    </p>
+                </div>
+
+                <div id="supplierGuidance" class="role-guidance-box alert alert-success mb-4 @(Model.Role == OrganizationType.Supplier ? "" : "d-none")">
+                    <h6 class="fw-bold mb-1">🧵 Supplier Onboarding Notes</h6>
+                    <p class="small mb-0">
+                        Supplier verification requires proof of fabric/material merchant business (commercial register or tax card). Once verified by Admin, you can publish listings and confirm orders.
+                    </p>
+                </div>
+
+                <!-- Organization Information -->
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-md-7">
                         <label asp-for="OrganizationName" class="form-label"></label>
-                        <input asp-for="OrganizationName" class="form-control" placeholder="e.g. Nile Garments" />
+                        <input asp-for="OrganizationName" class="form-control" placeholder="e.g. Cairo Loom, Nile Garments" />
                         <span asp-validation-for="OrganizationName" class="field-validation-error"></span>
                     </div>
                     <div class="col-12 col-md-5">
@@ -42,17 +95,19 @@
 
                 <hr class="my-4" style="border-color: var(--sila-line);" />
 
+                <!-- Account Representative Credentials -->
                 <div class="mb-3">
                     <label asp-for="FullName" class="form-label"></label>
-                    <input asp-for="FullName" class="form-control" placeholder="Your full personal name" />
+                    <input asp-for="FullName" class="form-control" placeholder="Authorized representative's full name" />
                     <span asp-validation-for="FullName" class="field-validation-error"></span>
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-md-7">
                         <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" type="email" class="form-control" placeholder="business@example.com" />
+                        <input asp-for="Email" type="email" class="form-control" placeholder="official@company.com" />
                         <span asp-validation-for="Email" class="field-validation-error"></span>
+                        <div class="form-text">A confirmation email will be sent to this address (D-04).</div>
                     </div>
                     <div class="col-12 col-md-5">
                         <label asp-for="PhoneNumber" class="form-label"></label>
@@ -75,11 +130,13 @@
                 </div>
 
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                    <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                        Create SILA Account
+                    </button>
                 </div>
 
                 <div class="text-center text-muted small">
-                    Already have an account? <a asp-controller="Account" asp-action="Login">Sign in here</a>
+                    Already registered? <a asp-controller="Account" asp-action="Login">Sign in to your account</a>
                 </div>
             </form>
         </div>
@@ -88,5 +145,45 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleRadios = document.querySelectorAll('input[name="Role"]');
+            const brandBox = document.getElementById('brandGuidance');
+            const factoryBox = document.getElementById('factoryGuidance');
+            const supplierBox = document.getElementById('supplierGuidance');
 
+            function updateRoleDisplay(selectedRole) {
+                document.querySelectorAll('.role-pill-card').forEach(card => card.classList.remove('active-role'));
+                
+                brandBox.classList.add('d-none');
+                factoryBox.classList.add('d-none');
+                supplierBox.classList.add('d-none');
+
+                if (selectedRole === 'Brand') {
+                    document.querySelector('label[for="optBrand"]')?.classList.add('active-role');
+                    brandBox.classList.remove('d-none');
+                } else if (selectedRole === 'Factory') {
+                    document.querySelector('label[for="optFactory"]')?.classList.add('active-role');
+                    factoryBox.classList.remove('d-none');
+                } else if (selectedRole === 'Supplier') {
+                    document.querySelector('label[for="optSupplier"]')?.classList.add('active-role');
+                    supplierBox.classList.remove('d-none');
+                }
+            }
+
+            roleRadios.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.checked) {
+                        updateRoleDisplay(this.value);
+                    }
+                });
+            });
+
+            // Initial trigger
+            const currentChecked = document.querySelector('input[name="Role"]:checked');
+            if (currentChecked) {
+                updateRoleDisplay(currentChecked.value);
+            }
+        });
+    </script>
+}

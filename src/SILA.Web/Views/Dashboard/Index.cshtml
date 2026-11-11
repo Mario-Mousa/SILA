@@ -1,0 +1,39 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: General Dashboard shell fallback
+   What is left: // TODO(T3.4): P4 to connect live unified statistics
+   Depends on:  T1.1 (Organization, VerificationStatus), T1.3 (_StatusBadge)
+   Used by:     DashboardController
+   How to test: Visit /Dashboard
+   Notes:       Default fallback when no specific role view matches
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.Entities
+@model Organization
+@{
+    ViewData["Title"] = "Organization Dashboard";
+}
+
+<div class="dashboard-shell py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">@(Model?.Name ?? "Dashboard Workspace")</h1>
+            <p class="text-muted mb-0">Welcome back to your SILA enterprise portal</p>
+        </div>
+        @if (Model != null)
+        {
+            <partial name="_StatusBadge" model="Model.VerificationStatus" />
+        }
+    </div>
+
+    <div class="card p-5 text-center border-0 shadow-sm">
+        <span class="fs-1 d-block mb-3">🏢</span>
+        <h2 class="h5 fw-bold mb-2">Workspace Overview</h2>
+        <p class="text-muted mx-auto mb-4" style="max-width: 32rem;">
+            Your role-specific tools, requests, and supply chain operations are initialized and ready.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-primary">View Organization Profile</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Return to Home</a>
+        </div>
+    </div>
+</div>
