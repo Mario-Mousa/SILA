@@ -1,4 +1,4 @@
-﻿// ═══════════ HANDOFF ═══════════════════════════════════
+// ═══════════ HANDOFF ═══════════════════════════════════
 // Task:        T2.3 | Owner: P3 | Status: DONE
 // What exists: Client-side UI enhancements, validation helpers, and interactive components
 // What is left: none

@@ -33,3 +33,4 @@ public class BrowseOrganizationsViewModel
 
     public int PageSize { get; set; } = 9;
 }
+

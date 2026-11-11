@@ -18,3 +18,4 @@ public class RoleChoiceViewModel
 
     public string ActionType { get; set; } = "Register"; // "Register" or "Login"
 }
+
