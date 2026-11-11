@@ -1,22 +1,49 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: Polished Sign-in view conforming to wireframes.md lines 88-98 with role badge and role switch option
+   What is left: none
+   Depends on:  T2.1 (AccountController.Login POST, LoginViewModel), T1.3 (UI guidelines)
+   Used by:     Registered Brand Owners, Factory Owners, Suppliers, and Admins
+   How to test: Visit /Account/Login, /Account/Login?role=Brand, /Account/Login?role=Factory; verify selected role banner and validation
+   Notes:       Retains explicit role context if routed from /Home/RoleChoice
+   ═══════════════════════════════════════════════════════ *@
 @model SILA.Web.Models.ViewModels.Account.LoginViewModel
 @{
     ViewData["Title"] = "Sign In";
     var returnUrl = ViewData["ReturnUrl"] as string;
     var infoMessage = TempData["InfoMessage"] as string;
+    var selectedRole = Context.Request.Query["role"].ToString();
 }
 
-<div class="row justify-content-center">
+<div class="row justify-content-center py-2">
     <div class="col-12 col-md-6 col-lg-5">
-        <div class="card p-4 p-md-5">
+        <div class="card p-4 p-md-5 border-0 shadow-sm">
             <div class="text-center mb-4">
-                <h1 class="h3 fw-bold" style="color: var(--sila-forest);">Sign in to SILA</h1>
-                <p class="text-muted">Enter your credentials to access your organization workspace</p>
+                <span class="badge sila-eyebrow mb-2">SILA · Sign In</span>
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                    <h1 class="h3 fw-bold mb-0" style="color: var(--sila-forest);">Sign in to SILA</h1>
+                    @if (!string.IsNullOrWhiteSpace(selectedRole))
+                    {
+                        <span class="badge bg-forest small">@selectedRole</span>
+                    }
+                </div>
+                <p class="text-muted small">
+                    @if (!string.IsNullOrWhiteSpace(selectedRole))
+                    {
+                        <span>Accessing @selectedRole workspace. <a asp-controller="Home" asp-action="RoleChoice" asp-route-actionType="Login" class="text-decoration-none">Change role</a></span>
+                    }
+                    else
+                    {
+                        <span>Enter your credentials to access your organization workspace</span>
+                    }
+                </p>
             </div>
 
             @if (!string.IsNullOrEmpty(infoMessage))
             {
-                <div class="alert alert-info" role="alert">
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
                     @infoMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
 
@@ -55,11 +82,11 @@
                 </div>
 
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                    <button type="submit" class="btn btn-primary btn-lg shadow-sm">Sign In</button>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top" style="border-color: var(--sila-line) !important;">
-                    <span>New to SILA? <a asp-controller="Account" asp-action="Register">Create an account</a></span>
+                    <span>New to SILA? <a asp-controller="Home" asp-action="RoleChoice" asp-route-actionType="Register">Create an account</a></span>
                     <a asp-controller="Account" asp-action="ResendConfirmationEmail">Resend verification</a>
                 </div>
             </form>
@@ -70,4 +97,3 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-

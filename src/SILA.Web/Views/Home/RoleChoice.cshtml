@@ -1,0 +1,145 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: Role Choice selector screen preceding login and registration per wireframes.md
+   What is left: none
+   Depends on:  T1.1 (OrganizationType enum), T1.3 (UI guidelines)
+   Used by:     Visitors onboarding onto SILA
+   How to test: Visit /Home/RoleChoice; select a role, toggle between Register/Login, and click Continue
+   Notes:       Enforces explicit role choice; passes selected role via query string to /Account/Register or /Account/Login
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.Enums
+@model SILA.Web.Models.ViewModels.Home.RoleChoiceViewModel
+@{
+    ViewData["Title"] = "Choose Your Role";
+    var isLogin = Model.ActionType == "Login";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-md-10 col-lg-8">
+        <div class="card p-4 p-md-5 border-0 shadow-sm">
+            <div class="text-center mb-4">
+                <span class="badge sila-eyebrow mb-2">SILA · Step 1 of 2</span>
+                <h1 class="h3 fw-bold" style="color: var(--sila-forest);">
+                    @(isLogin ? "Sign in to SILA" : "Create your SILA Account")
+                </h1>
+                <p class="text-muted">Choose your organization type to access the right tools and workspace</p>
+                
+                <!-- Action Type Switcher (Register / Login) -->
+                <div class="btn-group my-2" role="group" aria-label="Action choice">
+                    <a asp-controller="Home" asp-action="RoleChoice" asp-route-actionType="Register" asp-route-role="@Model.SelectedRole" 
+                       class="btn btn-sm @(!isLogin ? "btn-primary" : "btn-outline-primary") px-3">
+                        New Account (Sign Up)
+                    </a>
+                    <a asp-controller="Home" asp-action="RoleChoice" asp-route-actionType="Login" asp-route-role="@Model.SelectedRole" 
+                       class="btn btn-sm @(isLogin ? "btn-primary" : "btn-outline-primary") px-3">
+                        Existing Account (Sign In)
+                    </a>
+                </div>
+            </div>
+
+            <form id="roleChoiceForm" method="get">
+                <input type="hidden" id="actionType" name="actionType" value="@Model.ActionType" />
+
+                <div class="row g-3 mb-4">
+                    <!-- Option 1: Brand Owner -->
+                    <div class="col-12">
+                        <label class="role-choice-card d-flex align-items-center p-3 border rounded-3 cursor-pointer @(Model.SelectedRole == OrganizationType.Brand ? "border-forest bg-sand-light" : "")" for="roleBrand">
+                            <input class="form-check-input me-3 mt-0 fs-5" type="radio" name="role" id="roleBrand" value="@OrganizationType.Brand" @(Model.SelectedRole == OrganizationType.Brand || Model.SelectedRole == null ? "checked" : "") />
+                            <div class="role-icon-box me-3">
+                                <span class="fs-3">👗</span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h2 class="h6 fw-bold mb-0">Brand Owner</h2>
+                                    <span class="badge bg-forest-subtle text-forest small">Apparel Brands & Designers</span>
+                                </div>
+                                <p class="text-muted small mb-0 mt-1">
+                                    Find clothing factories, submit manufacturing requests with custom offer prices, and purchase raw fabrics.
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Option 2: Factory Owner -->
+                    <div class="col-12">
+                        <label class="role-choice-card d-flex align-items-center p-3 border rounded-3 cursor-pointer @(Model.SelectedRole == OrganizationType.Factory ? "border-forest bg-sand-light" : "")" for="roleFactory">
+                            <input class="form-check-input me-3 mt-0 fs-5" type="radio" name="role" id="roleFactory" value="@OrganizationType.Factory" @(Model.SelectedRole == OrganizationType.Factory ? "checked" : "") />
+                            <div class="role-icon-box me-3">
+                                <span class="fs-3">🏭</span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h2 class="h6 fw-bold mb-0">Factory Owner</h2>
+                                    <span class="badge bg-forest-subtle text-forest small">Garment Manufacturers</span>
+                                </div>
+                                <p class="text-muted small mb-0 mt-1">
+                                    Receive production requests from fashion brands, accept, reject, or negotiate with price counter-offers.
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Option 3: Supplier -->
+                    <div class="col-12">
+                        <label class="role-choice-card d-flex align-items-center p-3 border rounded-3 cursor-pointer @(Model.SelectedRole == OrganizationType.Supplier ? "border-forest bg-sand-light" : "")" for="roleSupplier">
+                            <input class="form-check-input me-3 mt-0 fs-5" type="radio" name="role" id="roleSupplier" value="@OrganizationType.Supplier" @(Model.SelectedRole == OrganizationType.Supplier ? "checked" : "") />
+                            <div class="role-icon-box me-3">
+                                <span class="fs-3">🧵</span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h2 class="h6 fw-bold mb-0">Supplier</h2>
+                                    <span class="badge bg-forest-subtle text-forest small">Fabric & Textile Merchants</span>
+                                </div>
+                                <p class="text-muted small mb-0 mt-1">
+                                    List raw materials with transparent prices and available inventory; fulfill orders with atomic stock checks.
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="button" id="btnContinue" class="btn btn-primary btn-lg shadow-sm">
+                        Continue to @(isLogin ? "Sign In" : "Sign Up") &rarr;
+                    </button>
+                </div>
+
+                <div class="text-center text-muted small">
+                    Organization profiles require administrative verification before placing live orders or requests (Part 4.1).
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btnContinue = document.getElementById('btnContinue');
+            const actionType = '@Model.ActionType';
+
+            btnContinue.addEventListener('click', function () {
+                const selectedRadio = document.querySelector('input[name="role"]:checked');
+                const selectedRole = selectedRadio ? selectedRadio.value : 'Brand';
+
+                if (actionType === 'Login') {
+                    window.location.href = '@Url.Action("Login", "Account")' + '?role=' + encodeURIComponent(selectedRole);
+                } else {
+                    window.location.href = '@Url.Action("Register", "Account")' + '?role=' + encodeURIComponent(selectedRole);
+                }
+            });
+
+            // Highlight card on click
+            document.querySelectorAll('.role-choice-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    document.querySelectorAll('.role-choice-card').forEach(c => {
+                        c.classList.remove('border-forest', 'bg-sand-light');
+                    });
+                    this.classList.add('border-forest', 'bg-sand-light');
+                });
+            });
+        });
+    </script>
+}
+

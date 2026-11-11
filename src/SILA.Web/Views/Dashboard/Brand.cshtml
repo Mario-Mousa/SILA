@@ -1,0 +1,175 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: Responsive Brand Owner Dashboard shell with metric placeholders and quick actions
+   What is left: // TODO(T3.4): P4 to bind real-time counts from ManufacturingRequestService, MaterialOrderService, and NotificationService
+   Depends on:  T1.1 (Organization, VerificationStatus), T1.3 (_StatusBadge, UI tokens)
+   Used by:     Brand Owners upon login
+   How to test: Sign in as Brand Owner; navigate to /Dashboard; verify header, badges, metric cards, and quick actions
+   Notes:       Follows wireframes.md lines 145-155; gates actions with verification status
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.Entities
+@using SILA.Web.Models.Enums
+@model Organization
+@{
+    ViewData["Title"] = "Brand Dashboard";
+    var orgName = Model?.Name ?? ViewBag.FullName ?? "Brand Workspace";
+    var isVerified = Model?.VerificationStatus == VerificationStatus.Verified;
+}
+
+<div class="dashboard-shell py-2">
+    <!-- Header with Verification Status -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="h3 fw-bold mb-0" style="color: var(--sila-forest);">@orgName</h1>
+                @if (Model != null)
+                {
+                    <partial name="_StatusBadge" model="Model.VerificationStatus" />
+                }
+            </div>
+            <p class="text-muted mb-0">Brand Owner Workspace · Manage apparel collections, production requests, and fabric orders</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                ⚙️ Organization Profile
+            </a>
+            <a asp-controller="Materials" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                🧵 Browse Materials
+            </a>
+            <a asp-controller="Home" asp-action="Factories" class="btn btn-primary btn-sm @(!isVerified ? "disabled" : "")" title="@(!isVerified ? "Verification required" : "")">
+                🏭 Find Factories
+            </a>
+        </div>
+    </div>
+
+    @if (!isVerified)
+    {
+        <!-- Verification Notice Banner -->
+        <div class="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 shadow-sm" role="alert">
+            <div class="d-flex align-items-center gap-3">
+                <span class="fs-3">⚠️</span>
+                <div>
+                    <h2 class="h6 fw-bold mb-0">Account Verification Required</h2>
+                    <p class="small mb-0 text-muted">
+                        Your brand account is currently <strong>@(Model?.VerificationStatus.ToString() ?? "Unverified")</strong>. 
+                        You can browse materials and factories, but submitting Manufacturing Requests or placing Material Orders requires Admin verification.
+                    </p>
+                </div>
+            </div>
+            <a asp-controller="Profile" asp-action="Edit" class="btn btn-sm btn-outline-dark text-nowrap ms-3">
+                Complete Verification &rarr;
+            </a>
+        </div>
+    }
+
+    <!-- Metric Cards Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-4">
+            <div class="card p-3 border-0 shadow-sm sila-metric-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Requests Awaiting Factory</span>
+                    <span class="metric-icon">⏳</span>
+                </div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="fs-2 fw-bold text-forest">0</span>
+                    <span class="badge bg-sand text-muted small">PendingApproval</span>
+                </div>
+                <small class="text-muted mt-2 d-block">Awaiting factory response</small>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-4">
+            <div class="card p-3 border-0 shadow-sm sila-metric-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Counter-Offers to Review</span>
+                    <span class="metric-icon">💬</span>
+                </div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="fs-2 fw-bold" style="color: var(--sila-clay);">0</span>
+                    <span class="badge bg-sand text-muted small">CounterOffered</span>
+                </div>
+                <small class="text-muted mt-2 d-block">Requires your action</small>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-4">
+            <div class="card p-3 border-0 shadow-sm sila-metric-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Material Orders Placed</span>
+                    <span class="metric-icon">📦</span>
+                </div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="fs-2 fw-bold text-forest">0</span>
+                    <span class="badge bg-sand text-muted small">Active</span>
+                </div>
+                <small class="text-muted mt-2 d-block">Fabric & trim orders</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Row -->
+    <div class="card p-3 mb-4 border-0 shadow-sm bg-sand-light">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span class="fw-semibold small text-muted">Quick Actions:</span>
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Home" asp-action="Factories" class="btn btn-sm btn-primary">
+                    + New Manufacturing Request
+                </a>
+                <a asp-controller="Materials" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                    Browse Raw Materials
+                </a>
+                <a asp-controller="Requests" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                    View Sent Requests
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Sections Grid -->
+    <div class="row g-4">
+        <!-- Recent Manufacturing Requests Shell -->
+        <div class="col-12 col-lg-8">
+            <div class="card p-4 border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h6 fw-bold mb-0">Recent Manufacturing Requests</h2>
+                    <a asp-controller="Requests" asp-action="Index" class="small text-decoration-none">View All &rarr;</a>
+                </div>
+                <!-- Placeholder State -->
+                <div class="text-center py-5 text-muted">
+                    <span class="fs-1 d-block mb-2">📋</span>
+                    <p class="mb-2 fw-semibold">No manufacturing requests sent yet</p>
+                    <p class="small mx-auto" style="max-width: 24rem;">
+                        Connect with verified garment factories to submit custom production batches with your target offer prices.
+                    </p>
+                    <a asp-controller="Home" asp-action="Factories" class="btn btn-sm btn-outline-primary mt-2">
+                        Explore Verified Factories
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Material Orders & Notifications Shell -->
+        <div class="col-12 col-lg-4">
+            <div class="card p-4 border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h6 fw-bold mb-0">Recent Material Orders</h2>
+                    <a asp-controller="Orders" asp-action="Index" class="small text-decoration-none">View All &rarr;</a>
+                </div>
+                <!-- Placeholder State -->
+                <div class="text-center py-4 text-muted border-bottom mb-3" style="border-color: var(--sila-line) !important;">
+                    <span class="fs-2 d-block mb-1">🧵</span>
+                    <p class="small mb-0">No active material orders placed</p>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h6 fw-bold mb-0">Latest Notifications</h2>
+                    <a asp-controller="Notifications" asp-action="Index" class="small text-decoration-none">Inbox &rarr;</a>
+                </div>
+                <div class="text-center py-3 text-muted">
+                    <span class="small">No new notifications</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

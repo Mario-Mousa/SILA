@@ -1,6 +1,39 @@
-﻿@{
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: Privacy and Data Protection policy page
+   What is left: none
+   Depends on:  T1.3 (Layout, UI guidelines)
+   Used by:     Public visitors, SILA footer link
+   How to test: Visit /Home/Privacy
+   Notes:       Confirms B2B platform data privacy handling for Egyptian business entities
+   ═══════════════════════════════════════════════════════ *@
+@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="row justify-content-center py-2">
+    <div class="col-12 col-lg-8">
+        <div class="card p-4 p-md-5 border-0 shadow-sm">
+            <span class="badge sila-eyebrow mb-2">Legal & Privacy</span>
+            <h1 class="h3 fw-bold mb-3" style="color: var(--sila-forest);">SILA Privacy Policy</h1>
+            <p class="text-muted">Last updated: November 2026</p>
+
+            <hr class="my-3" style="border-color: var(--sila-line);" />
+
+            <h2 class="h5 fw-bold mb-2">1. Organization Data & Verification Documents</h2>
+            <p class="text-muted small mb-3">
+                SILA collects business registration details, contact numbers, and verification documents (such as factory licenses and commercial tax cards) solely for the purpose of verifying legitimate business entities operating within the Egyptian fashion supply chain. Verification files are stored securely in dedicated server storage outside public repository trees.
+            </p>
+
+            <h2 class="h5 fw-bold mb-2">2. Transactions & Communications</h2>
+            <p class="text-muted small mb-3">
+                Manufacturing Requests, negotiation counter-offers, and Material Orders are strictly shared between the authorized parties (the submitting brand/buyer and the target factory/supplier). Record-level authorization (BR-07) is enforced on all data access.
+            </p>
+
+            <h2 class="h5 fw-bold mb-2">3. Account Credentials & Security</h2>
+            <p class="text-muted small mb-0">
+                All account passwords are encrypted and hashed using ASP.NET Core Identity standards. Email addresses are utilized strictly for account activation and security alerts.
+            </p>
+        </div>
+    </div>
+</div>

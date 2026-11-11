@@ -1,0 +1,157 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: Public directory of Verified Raw Material Suppliers with keyword search, city filter, and pagination
+   What is left: // TODO(T3.1): Link verified supplier cards directly to their public material catalog listings
+   Depends on:  T1.1 (Organization, VerificationStatus), T2.2 (IOrganizationService.GetSuppliersAsync), T1.3 (_Pagination, _StatusBadge)
+   Used by:     Public visitors, Brand Owners, Factory Owners seeking raw materials
+   How to test: Visit /Home/Suppliers; test search bar, city filter, and verify unverified suppliers never appear
+   Notes:       Enforces Part 4.1 & T2.3 Acceptance Criteria: only VerificationStatus.Verified suppliers are displayed
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.Enums
+@model SILA.Web.Models.ViewModels.Home.BrowseOrganizationsViewModel
+@{
+    ViewData["Title"] = "Verified Material Suppliers";
+}
+
+<!-- Page Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Suppliers</li>
+            </ol>
+        </nav>
+        <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">Verified Material Suppliers</h1>
+        <p class="text-muted mb-0">Browse certified suppliers of fabrics, textiles, yarns, and trims across Egypt</p>
+    </div>
+    <div>
+        <a asp-controller="Home" asp-action="Factories" class="btn btn-outline-primary btn-sm">
+            Looking for Factories? &rarr;
+        </a>
+    </div>
+</div>
+
+<!-- Search & City Filter Bar -->
+<div class="card p-3 p-md-4 mb-4 border-0 shadow-sm bg-sand-light">
+    <form method="get" asp-controller="Home" asp-action="Suppliers" class="row g-3 align-items-end">
+        <div class="col-12 col-md-6 col-lg-5">
+            <label for="search" class="form-label small fw-semibold">Search Supplier Name or Materials</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">🔍</span>
+                <input type="text" id="search" name="search" class="form-control border-start-0" 
+                       placeholder="e.g. Nile Textiles, Cotton, Denim..." value="@Model.SearchTerm" />
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 col-lg-4">
+            <label for="city" class="form-label small fw-semibold">City / Location</label>
+            <input type="text" id="city" name="city" class="form-control" 
+                   placeholder="e.g. Cairo, Alexandria, Mahalla..." value="@Model.SelectedCity" />
+        </div>
+
+        <div class="col-12 col-md-2 col-lg-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+                Filter
+            </button>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+            {
+                <a asp-controller="Home" asp-action="Suppliers" class="btn btn-outline-secondary" title="Clear Filters">
+                    Reset
+                </a>
+            }
+        </div>
+    </form>
+</div>
+
+<!-- Active Results Summary -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="small text-muted">
+        Showing <strong>@Model.Organizations.Count()</strong> of <strong>@Model.TotalCount</strong> verified supplier@(Model.TotalCount == 1 ? "" : "s")
+    </span>
+    @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+    {
+        <span class="badge bg-sand text-muted small">
+            Filtered by: @(Model.SearchTerm ?? "") @(Model.SelectedCity != null ? $"({Model.SelectedCity})" : "")
+        </span>
+    }
+</div>
+
+<!-- Supplier Grid -->
+@if (Model.Organizations.Any())
+{
+    <div class="row g-4">
+        @foreach (var supplier in Model.Organizations)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 p-4 border-0 shadow-sm sila-directory-card d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="org-avatar-box">
+                                <span class="fs-4">🧵</span>
+                            </div>
+                            <div>
+                                <h2 class="h5 fw-bold mb-0 text-truncate" style="max-width: 13rem;" title="@supplier.Name">
+                                    @supplier.Name
+                                </h2>
+                                <span class="small text-muted">📍 @(string.IsNullOrWhiteSpace(supplier.City) ? "Egypt" : supplier.City)</span>
+                            </div>
+                        </div>
+                        <partial name="_StatusBadge" model="VerificationStatus.Verified" />
+                    </div>
+
+                    <p class="text-muted small flex-grow-1 mb-3">
+                        @(string.IsNullOrWhiteSpace(supplier.Description) 
+                            ? "Verified Egyptian supplier of quality fabrics and apparel raw materials ready for bulk orders." 
+                            : supplier.Description)
+                    </p>
+
+                    <hr class="my-2" style="border-color: var(--sila-line);" />
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 mt-auto">
+                        <div class="small text-muted">
+                            @if (!string.IsNullOrWhiteSpace(supplier.ContactPhone))
+                            {
+                                <span>📞 @supplier.ContactPhone</span>
+                            }
+                        </div>
+                        <a asp-controller="Materials" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                            Browse Materials &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    <partial name="_Pagination" />
+}
+else
+{
+    <!-- Empty State -->
+    <div class="card p-5 text-center border-0 shadow-sm my-4">
+        <div class="mb-3 fs-1 text-muted">🧵</div>
+        <h3 class="h5 fw-bold mb-2">No Verified Suppliers Found</h3>
+        <p class="text-muted mx-auto mb-4" style="max-width: 32rem;">
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+            {
+                <span>No verified suppliers match your current filter criteria ("@Model.SearchTerm @Model.SelectedCity"). Try clearing your filters or checking your spelling.</span>
+            }
+            else
+            {
+                <span>There are currently no verified suppliers listed in the public directory. New supplier verification requests are reviewed daily by our administrative team.</span>
+            }
+        </p>
+        <div>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SelectedCity))
+            {
+                <a asp-controller="Home" asp-action="Suppliers" class="btn btn-outline-primary me-2">Clear Filters</a>
+            }
+            <a asp-controller="Account" asp-action="Register" asp-route-role="Supplier" class="btn btn-primary">
+                Are you a supplier? Register today
+            </a>
+        </div>
+    </div>
+}
+

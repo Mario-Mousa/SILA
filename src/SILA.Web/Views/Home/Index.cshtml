@@ -1,8 +1,178 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.3 | Owner: P3 | Status: DONE
+   What exists: SILA Home landing page with Hero section, Browse CTA buttons, supply chain feature cards, and role onboarding
+   What is left: // TODO(T3.1): Link verified supplier cards directly to their public material listings
+   Depends on:  T1.3 (Layout, UI guidelines), T2.2 (Verified directories)
+   Used by:     Public visitors, Brand Owners, Factory Owners, Suppliers
+   How to test: Visit /; verify responsive layout, CTA buttons, and role navigation
+   Notes:       Follows wireframes.md lines 55-68 and ui-guidelines.md design tokens
+   ═══════════════════════════════════════════════════════ *@
+@{
+    ViewData["Title"] = "Egyptian Fashion Supply Chain Platform";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero Section -->
+<section class="sila-hero text-center py-5 mb-5">
+    <div class="container py-lg-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-9">
+                <span class="badge sila-eyebrow mb-3">SILA · Fashion Supply Network</span>
+                <h1 class="display-4 fw-bold mb-3 sila-hero-title">Find the right partner for your next collection</h1>
+                <p class="lead text-muted mb-4 mx-auto" style="max-width: 44rem;">
+                    Connecting Egyptian clothing brands, garment manufacturing factories, and raw material suppliers in one unified, transparent B2B workspace.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+                    <a asp-controller="Home" asp-action="Suppliers" class="btn btn-primary btn-lg px-4 shadow-sm">
+                        <span class="me-1">🧵</span> Browse Suppliers
+                    </a>
+                    <a asp-controller="Home" asp-action="Factories" class="btn btn-outline-primary btn-lg px-4 shadow-sm">
+                        <span class="me-1">🏭</span> Browse Factories
+                    </a>
+                    <a asp-controller="Home" asp-action="RoleChoice" class="btn btn-outline-secondary btn-lg px-4">
+                        Choose Your Role
+                    </a>
+                </div>
+                <div class="d-flex justify-content-center align-items-center gap-4 text-muted small mt-2">
+                    <span><i class="me-1 text-success">✓</i> Verified Organizations Only</span>
+                    <span><i class="me-1 text-success">✓</i> Direct Factory Counter-Offers</span>
+                    <span><i class="me-1 text-success">✓</i> Atomic Stock Reservations</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Supply Chain Pillars Section -->
+<section class="mb-5">
+    <div class="text-center mb-5">
+        <h2 class="h3 fw-bold" style="color: var(--sila-forest);">How SILA Connects the Supply Chain</h2>
+        <p class="text-muted mx-auto" style="max-width: 36rem;">
+            A structured workflow eliminating fragmented communication, informal pricing, and stock uncertainty.
+        </p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Feature 1: Raw Materials -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm sila-feature-card">
+                <div class="feature-icon-wrapper mb-3">
+                    <span class="fs-1">🧵</span>
+                </div>
+                <h3 class="h5 fw-bold mb-2">Find Raw Materials</h3>
+                <p class="text-muted mb-3 flex-grow-1">
+                    Browse active fabric, yarn, and accessories catalogs with fixed EGP unit pricing. Stock is checked at submission and deducted atomically upon supplier confirmation.
+                </p>
+                <div>
+                    <a asp-controller="Home" asp-action="Suppliers" class="fw-semibold text-decoration-none">
+                        Browse verified suppliers &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature 2: Manufacturing Requests -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm sila-feature-card">
+                <div class="feature-icon-wrapper mb-3">
+                    <span class="fs-1">🏭</span>
+                </div>
+                <h3 class="h5 fw-bold mb-2">Manufacturing Requests</h3>
+                <p class="text-muted mb-3 flex-grow-1">
+                    Send targeted production requests with product specifications, tech packs, and proposed offer prices to verified local clothing factories.
+                </p>
+                <div>
+                    <a asp-controller="Home" asp-action="Factories" class="fw-semibold text-decoration-none">
+                        Explore partner factories &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature 3: Track Decisions -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm sila-feature-card">
+                <div class="feature-icon-wrapper mb-3">
+                    <span class="fs-1">📊</span>
+                </div>
+                <h3 class="h5 fw-bold mb-2">Transparent Decisions</h3>
+                <p class="text-muted mb-3 flex-grow-1">
+                    Track requests and orders through immutable status history logs. Factories can counter-offer on price, and suppliers update dispatch and delivery in real time.
+                </p>
+                <div>
+                    <a asp-controller="Home" asp-action="RoleChoice" asp-route-actionType="Register" class="fw-semibold text-decoration-none">
+                        Get started with SILA &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Onboarding Cards by Role -->
+<section class="py-4 my-5 bg-light-sand rounded-4 p-4 p-lg-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-12 col-md-8">
+            <h2 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">Tailored for Every Supply Chain Partner</h2>
+            <p class="text-muted mb-0">Select your organization type to register and begin expanding your business operations.</p>
+        </div>
+        <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">Existing User? Sign In</a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Brand Owner Card -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-3 bg-white border">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-forest text-white">Brand Owner</span>
+                </div>
+                <h4 class="h6 fw-bold">Clothing Brands & Designers</h4>
+                <p class="small text-muted mb-3">
+                    Submit manufacturing requests to garment factories and order raw materials directly from verified fabric merchants.
+                </p>
+                <div class="mt-auto">
+                    <a asp-controller="Account" asp-action="Register" asp-route-role="Brand" class="btn btn-sm btn-outline-primary w-100">
+                        Register as Brand
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Factory Owner Card -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-3 bg-white border">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-forest text-white">Factory Owner</span>
+                </div>
+                <h4 class="h6 fw-bold">Apparel & Garment Factories</h4>
+                <p class="small text-muted mb-3">
+                    Receive production requests, accept or propose price counter-offers, and purchase fabrics from suppliers.
+                </p>
+                <div class="mt-auto">
+                    <a asp-controller="Account" asp-action="Register" asp-route-role="Factory" class="btn btn-sm btn-outline-primary w-100">
+                        Register as Factory
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supplier Card -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 p-3 bg-white border">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-forest text-white">Supplier</span>
+                </div>
+                <h4 class="h6 fw-bold">Fabric & Material Merchants</h4>
+                <p class="small text-muted mb-3">
+                    Publish your material catalog with fixed prices and stock, fulfill bulk orders, and manage dispatch logistics.
+                </p>
+                <div class="mt-auto">
+                    <a asp-controller="Account" asp-action="Register" asp-route-role="Supplier" class="btn btn-sm btn-outline-primary w-100">
+                        Register as Supplier
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
