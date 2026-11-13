@@ -132,3 +132,4 @@ public class NotificationsController : Controller
         return RedirectToAction(nameof(Index));
     }
 }
+

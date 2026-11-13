@@ -105,3 +105,4 @@ Centralized validation enforced by `IOwnershipService`:
 | **BR-02 (Single Supplier Partition)** | T3.2 | `TC-RULE-02` |
 | **BR-04 (Line Snapshot Immutability)** | T3.2 & T1.1 | `TC-RULE-03` |
 | **BR-05 (Listing Deactivation Guard)** | T3.1 & T1.1 | `TC-RULE-04` |
+

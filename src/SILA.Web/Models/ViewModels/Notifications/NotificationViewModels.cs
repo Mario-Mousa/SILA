@@ -44,3 +44,4 @@ public class NotificationListViewModel
     public bool HasPreviousPage => CurrentPage > 1;
     public bool HasNextPage => CurrentPage < TotalPages;
 }
+
