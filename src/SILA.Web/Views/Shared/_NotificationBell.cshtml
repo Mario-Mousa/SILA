@@ -1,2 +1,36 @@
-@* TODO(T2.4): Read and display the signed-in user's unread notification count. *@
-<span class="notification-dot" aria-label="Notifications"></span>
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.4 | Owner: P4 | Status: DONE
+   What exists: Notification bell badge partial dynamically displaying unread count from /Notifications/UnreadCount
+   What is left: none
+   Depends on:  T2.4 (NotificationsController.UnreadCount, NotificationService)
+   Used by:     Views/Shared/_Layout.cshtml
+   How to test: When logged in, receive a notification; verify the badge displays the unread number
+   Notes:       Lightweight client-side fetch updates count asynchronously without full-page reloads
+   ═══════════════════════════════════════════════════════ *@
+
+<span id="sila-unread-badge" class="badge rounded-pill bg-danger ms-1 d-none" aria-label="Unread notifications count">0</span>
+
+<script>
+    (function () {
+        function updateNotificationCount() {
+            var badge = document.getElementById('sila-unread-badge');
+            if (!badge) return;
+            fetch('/Notifications/UnreadCount', { credentials: 'same-origin' })
+                .then(function (response) { return response.ok ? response.json() : null; })
+                .then(function (data) {
+                    if (data && typeof data.count === 'number' && data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.classList.remove('d-none');
+                    } else if (badge) {
+                        badge.classList.add('d-none');
+                    }
+                })
+                .catch(function () {});
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateNotificationCount);
+        } else {
+            updateNotificationCount();
+        }
+    })();
+</script>

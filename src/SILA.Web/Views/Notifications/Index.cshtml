@@ -1,0 +1,102 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T2.4 | Owner: P4 | Status: DONE
+   What exists: Notifications Index view displaying user notifications, unread badges, mark-read actions, and empty states
+   What is left: none
+   Depends on:  T2.4 (NotificationsController, NotificationListViewModel)
+   Used by:     All authenticated users
+   How to test: Visit /Notifications; verify notifications list, read status changes, and mark-all button works
+   Notes:       Responsive layout tested at 1920x1080, 1366x768, and 768x1024 viewports
+   ═══════════════════════════════════════════════════════ *@
+
+@model SILA.Web.Models.ViewModels.Notifications.NotificationListViewModel
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+            <div>
+                <h1 class="h3 fw-bold mb-1">Notifications</h1>
+                <p class="text-muted mb-0">Stay informed about your manufacturing requests, material orders, and account status.</p>
+            </div>
+            @if (Model.UnreadCount > 0)
+            {
+                <form asp-action="MarkAllAsRead" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        Mark all as read (@Model.UnreadCount)
+                    </button>
+                </form>
+            }
+        </div>
+
+        @if (!Model.Notifications.Any())
+        {
+            <div class="card p-5 text-center">
+                <div class="mb-3">
+                    <span class="fs-1 text-muted" aria-hidden="true">🔔</span>
+                </div>
+                <h2 class="h5 fw-bold mb-1">No notifications yet</h2>
+                <p class="text-muted mb-0">When factories respond to your requests or orders are updated, alerts will appear here.</p>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0 overflow-hidden">
+                <div class="list-group list-group-flush">
+                    @foreach (var item in Model.Notifications)
+                    {
+                        <div class="list-group-item p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start gap-2 @(item.IsRead ? "" : "bg-light border-start border-4 border-success")">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    @if (!item.IsRead)
+                                    {
+                                        <span class="badge bg-primary" style="font-size: 0.7rem;">New</span>
+                                    }
+                                    <span class="text-muted small" title="@item.CreatedAt.ToString("u")">@item.TimeAgo</span>
+                                </div>
+                                <p class="mb-1 text-dark @(item.IsRead ? "" : "fw-semibold")">@item.Message</p>
+                                @if (!string.IsNullOrWhiteSpace(item.LinkUrl))
+                                {
+                                    <a href="@item.LinkUrl" class="small fw-semibold text-decoration-none">
+                                        View details &rarr;
+                                    </a>
+                                }
+                            </div>
+                            @if (!item.IsRead)
+                            {
+                                <form asp-action="MarkAsRead" asp-route-id="@item.Id" method="post" class="mt-2 mt-sm-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" title="Mark as read">
+                                        <small>Mark as read</small>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="mt-4" aria-label="Notifications pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)">Previous</a>
+                        </li>
+                        @for (int p = 1; p <= Model.TotalPages; p++)
+                        {
+                            <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@p">@p</a>
+                            </li>
+                        }
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+    </div>
+</div>
