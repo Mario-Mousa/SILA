@@ -1,0 +1,15 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T3.1 | Owner: P3 | Status: DONE
+   What exists: Materials Catalog Browse view (matching requirement naming Browse.cshtml)
+   What is left: // TODO(T3.2): P1 wires direct "Place Material Order" CTA from catalog cards
+   Depends on:  T3.1 (Index.cshtml, MaterialCatalogViewModel)
+   Used by:     Public visitors, Brand Owners, Factory Owners
+   How to test: Visit /Materials/Browse; verify it displays the catalog exactly as /Materials
+   Notes:       D-08, BR-05, BR-06, D-10
+   ═══════════════════════════════════════════════════════ *@
+@model SILA.Web.Models.ViewModels.Materials.MaterialCatalogViewModel
+@{
+    ViewData["Title"] = "Browse Raw Materials";
+}
+
+@await Html.PartialAsync("Index", Model)

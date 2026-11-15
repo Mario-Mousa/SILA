@@ -1,0 +1,205 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T3.1 | Owner: P3 | Status: DONE
+   What exists: Supplier Manage Listings dashboard table displaying all own materials, status badges, metrics, and quick actions
+   What is left: // TODO(T3.2): P1 links incoming material order lines to listings
+   Depends on:  T1.1 (MaterialListing, Organization), T3.1 (SupplierManageListingsViewModel)
+   Used by:     Supplier users
+   How to test: Log in as Supplier; visit /Materials/Manage; create/edit listing; test deactivation confirmation
+   Notes:       BR-05: Deactivate action (soft-delete). BR-06: Out of stock indicator at 0. BR-07: Supplier sees only own listings.
+   ═══════════════════════════════════════════════════════ *@
+@model SILA.Web.Models.ViewModels.Materials.SupplierManageListingsViewModel
+@{
+    ViewData["Title"] = "My Material Listings";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">My Materials</li>
+            </ol>
+        </nav>
+        <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">My Material Catalog</h1>
+        <p class="text-muted mb-0">Manage your raw material inventory, prices, and catalog visibility</p>
+    </div>
+    <div>
+        @if (Model.IsVerified)
+        {
+            <a asp-controller="Materials" asp-action="Create" class="btn btn-primary">
+                + Add New Material
+            </a>
+        }
+        else
+        {
+            <button class="btn btn-primary" disabled title="Account must be verified by Admin to add listings">
+                + Add New Material (Locked)
+            </button>
+        }
+    </div>
+</div>
+
+@if (!Model.IsVerified)
+{
+    <!-- Unverified Banner (Part 4.1) -->
+    <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+        <span class="fs-4 me-3">⚠️</span>
+        <div>
+            <h6 class="fw-bold mb-1">Account Pending Verification</h6>
+            <p class="small mb-0">
+                Your supplier organization is currently pending review by SILA administrators. You can review existing listings, but you cannot create new listings until your profile and proof of business are verified.
+            </p>
+        </div>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Summary Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-4">
+        <div class="card p-3 border shadow-sm bg-sand-light">
+            <span class="text-muted small fw-semibold text-uppercase">Total Catalog Listings</span>
+            <span class="fs-2 fw-bold text-forest mt-1">@Model.TotalCount</span>
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="card p-3 border shadow-sm bg-sand-light">
+            <span class="text-muted small fw-semibold text-uppercase">Active in Catalog</span>
+            <span class="fs-2 fw-bold text-success mt-1">@Model.ActiveCount</span>
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="card p-3 border shadow-sm bg-sand-light">
+            <span class="text-muted small fw-semibold text-uppercase">Out of Stock (0 units)</span>
+            <span class="fs-2 fw-bold text-danger mt-1">@Model.OutOfStockCount</span>
+        </div>
+    </div>
+</div>
+
+<!-- Listings Table -->
+@if (!Model.Listings.Any())
+{
+    <div class="card p-5 text-center my-4 border shadow-sm bg-sand-light">
+        <div class="display-5 mb-3 text-muted">🧵</div>
+        <h3 class="h5 fw-bold" style="color: var(--sila-forest);">No Material Listings Yet</h3>
+        <p class="text-muted mb-4 mx-auto" style="max-width: 480px;">
+            You have not listed any raw materials in the catalog yet. Add fabrics, trims, yarns, or hardware to start receiving orders from Egyptian garment factories and brands.
+        </p>
+        @if (Model.IsVerified)
+        {
+            <div>
+                <a asp-controller="Materials" asp-action="Create" class="btn btn-primary">
+                    + Add Your First Material
+                </a>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="card border shadow-sm overflow-hidden mb-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="py-3 ps-4">Material Details</th>
+                        <th scope="col" class="py-3">Category</th>
+                        <th scope="col" class="py-3">Unit Price (EGP)</th>
+                        <th scope="col" class="py-3">Stock Available</th>
+                        <th scope="col" class="py-3">Status</th>
+                        <th scope="col" class="py-3 text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Listings)
+                    {
+                        var isOutOfStock = item.AvailableQuantity <= 0;
+                        <tr>
+                            <!-- Material Name & Description -->
+                            <td class="ps-4">
+                                <div class="fw-bold" style="color: var(--sila-forest);">
+                                    <a asp-controller="Materials" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none" style="color: inherit;">
+                                        @item.Name
+                                    </a>
+                                </div>
+                                <div class="text-muted small text-truncate" style="max-width: 260px;">
+                                    @(string.IsNullOrWhiteSpace(item.Description) ? "No description provided." : item.Description)
+                                </div>
+                            </td>
+
+                            <!-- Category -->
+                            <td>
+                                <span class="badge bg-sand text-forest fw-semibold">@item.Category</span>
+                            </td>
+
+                            <!-- Price (D-10: EGP) -->
+                            <td class="fw-semibold">
+                                EGP @item.UnitPrice.ToString("N2") <small class="text-muted fw-normal">/@item.Unit</small>
+                            </td>
+
+                            <!-- Available Quantity (BR-06) -->
+                            <td>
+                                @if (isOutOfStock)
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold">0 @item.Unit (Out of Stock)</span>
+                                }
+                                else
+                                {
+                                    <span class="fw-bold text-dark">@item.AvailableQuantity.ToString("N0")</span> <small class="text-muted">@item.Unit</small>
+                                }
+                            </td>
+
+                            <!-- Status (BR-05) -->
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-muted border border-secondary-subtle fw-semibold">Deactivated</span>
+                                }
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a asp-controller="Materials" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-secondary" title="View Details">
+                                        View
+                                    </a>
+                                    <a asp-controller="Materials" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary" title="Edit Listing">
+                                        Edit
+                                    </a>
+                                    @if (item.IsActive)
+                                    {
+                                        <form method="post" asp-controller="Materials" asp-action="Deactivate" asp-route-id="@item.Id" class="d-inline"
+                                              onsubmit="return confirm('Deactivating this listing will hide it from the buyer catalog while preserving all order history (BR-05). Are you sure?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="Deactivate Listing">
+                                                Deactivate
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,256 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T3.1 | Owner: P3 | Status: DONE
+   What exists: Material Details view displaying specs, verified supplier information, EGP pricing, and stock status
+   What is left: // TODO(T3.2): P1 wires direct "Place Material Order" CTA for Buyer roles
+   Depends on:  T1.1 (MaterialListing, Organization), T3.1 (MaterialDetailsViewModel), T1.3 (_StatusBadge)
+   Used by:     Public visitors, Brand Owners, Factory Owners, Owner Suppliers
+   How to test: Visit /Materials/Details/{id}; verify out-of-stock badge when stock is 0 (BR-06); verify supplier management actions appear only for owner (BR-07)
+   Notes:       BR-05: Deactivated listings hidden from buyers. BR-06: Out of stock at 0. D-10: Currency is EGP.
+   ═══════════════════════════════════════════════════════ *@
+@model SILA.Web.Models.ViewModels.Materials.MaterialDetailsViewModel
+@{
+    ViewData["Title"] = $"{Model.Listing.Name} - Material Details";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Materials" asp-action="Index">Materials Catalog</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Listing.Name</li>
+        </ol>
+    </nav>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">@Model.Listing.Name</h1>
+            <p class="text-muted mb-0">Category: <span class="badge bg-sand text-forest fw-semibold">@Model.Listing.Category</span></p>
+        </div>
+        <div>
+            <a asp-controller="Materials" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                &larr; Back to Catalog
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Main Listing Details (Left Column) -->
+    <div class="col-12 col-lg-8">
+        <div class="card p-4 p-md-5 mb-4 shadow-sm border">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <span class="fs-5 fw-bold" style="color: var(--sila-forest);">Specifications & Stock</span>
+                <div>
+                    @if (Model.IsOutOfStock)
+                    {
+                        <!-- BR-06: Out of stock badge -->
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6 px-3 py-2 fw-bold">
+                            Out of Stock
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-6 px-3 py-2 fw-semibold">
+                            In Stock (@Model.Listing.AvailableQuantity @Model.Listing.Unit)
+                        </span>
+                    }
+                    @if (!Model.Listing.IsActive)
+                    {
+                        <span class="badge bg-secondary-subtle text-muted fs-6 px-3 py-2 fw-semibold ms-2">
+                            Deactivated
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h5 class="fw-bold fs-6 mb-2 text-muted text-uppercase tracking-wider">Material Description</h5>
+                <p class="lead fs-6" style="white-space: pre-line;">
+                    @(string.IsNullOrWhiteSpace(Model.Listing.Description) 
+                        ? "No detailed description provided by the supplier for this raw material." 
+                        : Model.Listing.Description)
+                </p>
+            </div>
+
+            <!-- Specs Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle mb-0">
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="w-35 text-muted small fw-semibold bg-sand-light">Unit of Measurement</th>
+                            <td class="fw-bold">@Model.Listing.Unit</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted small fw-semibold bg-sand-light">Price per Unit (EGP)</th>
+                            <td class="fw-bold fs-5" style="color: var(--sila-forest);">
+                                EGP @Model.Listing.UnitPrice.ToString("N2") <span class="small text-muted fw-normal">/ @Model.Listing.Unit</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted small fw-semibold bg-sand-light">Available Quantity</th>
+                            <td>
+                                @if (Model.IsOutOfStock)
+                                {
+                                    <span class="text-danger fw-bold">0 @Model.Listing.Unit (Out of Stock)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-dark fw-bold">@Model.Listing.AvailableQuantity.ToString("N0") @Model.Listing.Unit</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted small fw-semibold bg-sand-light">Catalog Status</th>
+                            <td>
+                                @(Model.Listing.IsActive ? "Active (Listed in public catalog)" : "Deactivated (Hidden from catalog)")
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted small fw-semibold bg-sand-light">Listed Since</th>
+                            <td>@Model.Listing.CreatedAt.ToString("dd MMM yyyy")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Supplier Info & Action Panel -->
+    <div class="col-12 col-lg-4">
+        <!-- Supplier Organization Card -->
+        <div class="card p-4 mb-4 shadow-sm border bg-sand-light">
+            <h5 class="fw-bold fs-6 mb-3" style="color: var(--sila-forest);">Supplier Details</h5>
+            <div class="mb-3">
+                <div class="fw-bold fs-6 mb-1">
+                    🏢 @(Model.Listing.SupplierOrganization?.Name ?? "Supplier Organization")
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Listing.SupplierOrganization?.City))
+                {
+                    <p class="text-muted small mb-1">📍 @Model.Listing.SupplierOrganization.City, Egypt</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Listing.SupplierOrganization?.ContactPhone))
+                {
+                    <p class="text-muted small mb-1">📞 @Model.Listing.SupplierOrganization.ContactPhone</p>
+                }
+                <div class="mt-2">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold">
+                        ✓ Verified Supplier
+                    </span>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Listing.SupplierOrganization?.Description))
+            {
+                <p class="text-muted small border-top pt-2 mb-0">
+                    @Model.Listing.SupplierOrganization.Description
+                </p>
+            }
+        </div>
+
+        <!-- Buyer Order Box or Supplier Management Controls -->
+        <div class="card p-4 shadow-sm border">
+            @if (Model.IsOwnerSupplier)
+            {
+                <!-- Owner Controls (BR-07) -->
+                <h5 class="fw-bold fs-6 mb-3" style="color: var(--sila-forest);">Supplier Actions</h5>
+                <p class="text-muted small mb-3">You own this material listing. You can update pricing and stock, or deactivate it when unavailable.</p>
+                
+                <div class="d-grid gap-2 mb-3">
+                    <a asp-controller="Materials" asp-action="Edit" asp-route-id="@Model.Listing.Id" class="btn btn-primary">
+                        ✏️ Edit Listing
+                    </a>
+
+                    @if (Model.Listing.IsActive)
+                    {
+                        <form method="post" asp-controller="Materials" asp-action="Deactivate" asp-route-id="@Model.Listing.Id" 
+                              onsubmit="return confirm('Are you sure you want to deactivate this listing? It will be removed from the public catalog, but historical orders will be preserved (BR-05).');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                🚫 Deactivate Listing
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary small mb-0 py-2 text-center">
+                            This listing is currently deactivated.
+                        </div>
+                    }
+                </div>
+                <a asp-controller="Materials" asp-action="Manage" class="btn btn-outline-secondary btn-sm text-center">
+                    Go to My Listings
+                </a>
+            }
+            else if (Model.CanOrder)
+            {
+                <!-- Buyer Order CTA (Brand or Factory) -->
+                <h5 class="fw-bold fs-6 mb-3" style="color: var(--sila-forest);">Order Raw Material</h5>
+                <p class="text-muted small mb-3">
+                    As a verified buyer, you can initiate a material order with this supplier.
+                </p>
+                <div class="bg-sand p-3 rounded mb-3 text-center">
+                    <div class="small text-muted mb-1">Total Unit Price:</div>
+                    <div class="fs-4 fw-bold" style="color: var(--sila-forest);">
+                        EGP @Model.Listing.UnitPrice.ToString("N2")
+                    </div>
+                    <div class="small text-muted">per @Model.Listing.Unit</div>
+                </div>
+
+                <!-- TODO(T3.2): P1 wires direct Material Order placement -->
+                <div class="d-grid">
+                    <button type="button" class="btn btn-primary" onclick="alert('Order placement workflow will be active in Task T3.2 (P1). Direct cart & atomic order placement will connect here.');">
+                        🛒 Place Material Order
+                    </button>
+                    <small class="text-muted text-center mt-2">Ready for Phase 3 T3.2 Order Service</small>
+                </div>
+            }
+            else if (Model.IsOutOfStock)
+            {
+                <!-- BR-06: Out of stock - ordering disabled -->
+                <h5 class="fw-bold fs-6 mb-2 text-danger">Currently Out of Stock</h5>
+                <p class="text-muted small mb-3">
+                    This material currently has 0 available units. Ordering is disabled until the supplier restocks (BR-06).
+                </p>
+                <button type="button" class="btn btn-secondary w-100" disabled>
+                    🚫 Ordering Disabled (Out of Stock)
+                </button>
+            }
+            else if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                <!-- Visitor Sign In Prompt -->
+                <h5 class="fw-bold fs-6 mb-3" style="color: var(--sila-forest);">Interested in Ordering?</h5>
+                <p class="text-muted small mb-3">
+                    Sign in with a Brand or Factory account to place orders for this material.
+                </p>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-sm">
+                        Sign In to Order
+                    </a>
+                    <a asp-controller="Home" asp-action="RoleChoice" class="btn btn-outline-secondary btn-sm">
+                        Create an Account
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info small mb-0">
+                    Logged in as <strong>@User.Identity?.Name</strong>. Ordering raw materials is available to Brand and Factory accounts.
+                </div>
+            }
+        </div>
+    </div>
+</div>
