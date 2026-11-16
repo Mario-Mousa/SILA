@@ -22,3 +22,4 @@ public class MaterialDetailsViewModel
 
     public bool IsOutOfStock => Listing.AvailableQuantity <= 0;
 }
+

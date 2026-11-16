@@ -92,13 +92,49 @@ public class MaterialsController : Controller
     }
 
     /// <summary>
-    /// Alias for catalog browsing (matching requirements calling for Browse view).
+    /// Displays the buyer raw materials browse view (matching requirements for Browse.cshtml).
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Browse(string? search = null, string? category = null, int page = 1)
     {
-        return await Index(search, category, page);
+        const int pageSize = 12;
+        var currentPage = page > 0 ? page : 1;
+
+        var (items, totalCount) = await _listingService.BrowseActiveListingsAsync(
+            search: search,
+            category: category,
+            page: currentPage,
+            pageSize: pageSize);
+
+        var categories = await _listingService.GetCategoriesAsync();
+
+        int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        if (totalPages < 1) totalPages = 1;
+
+        var viewModel = new MaterialCatalogViewModel
+        {
+            Listings = items,
+            SearchTerm = search,
+            SelectedCategory = category,
+            Categories = categories,
+            CurrentPage = currentPage,
+            TotalPages = totalPages,
+            TotalCount = totalCount,
+            PageSize = pageSize
+        };
+
+        ViewData["CurrentPage"] = viewModel.CurrentPage;
+        ViewData["TotalPages"] = viewModel.TotalPages;
+        ViewData["PageAction"] = "Browse";
+        ViewData["PageController"] = "Materials";
+        ViewData["PageRouteValues"] = new Dictionary<string, string>
+        {
+            { "search", search ?? string.Empty },
+            { "category", category ?? string.Empty }
+        };
+
+        return View("Browse", viewModel);
     }
 
     /// <summary>
@@ -413,3 +449,4 @@ public class MaterialsController : Controller
         return RedirectToAction(nameof(Manage));
     }
 }
+

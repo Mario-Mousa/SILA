@@ -26,3 +26,4 @@ public class SupplierManageListingsViewModel
 
     public int OutOfStockCount => Listings.Count(l => l.IsActive && l.AvailableQuantity == 0);
 }
+

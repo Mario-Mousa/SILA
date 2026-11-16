@@ -50,3 +50,4 @@ public class MaterialListingFormViewModel
     /// </summary>
     public byte[]? RowVersion { get; set; }
 }
+

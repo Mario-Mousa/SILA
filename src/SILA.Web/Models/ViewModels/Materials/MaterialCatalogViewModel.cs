@@ -30,3 +30,4 @@ public class MaterialCatalogViewModel
 
     public int PageSize { get; set; } = 12;
 }
+
