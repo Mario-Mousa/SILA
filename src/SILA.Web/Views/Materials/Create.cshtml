@@ -1,0 +1,124 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T3.1 | Owner: P3 | Status: DONE
+   What exists: Create Material Listing form with client-side and server-side validation
+   What is left: // TODO(T3.2): P1 reads listing details during order placement
+   Depends on:  T1.1 (MaterialListing), T3.1 (MaterialListingFormViewModel), _ValidationScriptsPartial
+   Used by:     Supplier users
+   How to test: Visit /Materials/Create as verified supplier; test field validations (Unit Price > 0, Available Quantity >= 0); submit valid listing
+   Notes:       BR-01: UnitPrice > 0, AvailableQuantity >= 0. D-10: Currency is EGP.
+   ═══════════════════════════════════════════════════════ *@
+@model SILA.Web.Models.ViewModels.Materials.MaterialListingFormViewModel
+@{
+    ViewData["Title"] = "Add New Material Listing";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Materials" asp-action="Manage">My Materials</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Material</li>
+                </ol>
+            </nav>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">Add New Material Listing</h1>
+            <p class="text-muted mb-0">Publish raw materials, textiles, trims, or fabrics to the SILA verified buyer catalog</p>
+        </div>
+
+        <div class="card p-4 p-md-5 border shadow-sm">
+            <form method="post" asp-controller="Materials" asp-action="Create" class="needs-validation">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <!-- Material Name -->
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Material Name <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. 100% Egyptian Giza Cotton Poplin 140 GSM" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <!-- Category & Unit -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Category" class="form-label">Category <span class="text-danger">*</span></label>
+                        <input asp-for="Category" class="form-control" list="categoryOptions" placeholder="e.g. Cotton, Denim, Linen, Zippers..." />
+                        <datalist id="categoryOptions">
+                            <option value="Cotton" />
+                            <option value="Denim" />
+                            <option value="Linen" />
+                            <option value="Wool" />
+                            <option value="Silk" />
+                            <option value="Polyester" />
+                            <option value="Leather" />
+                            <option value="Buttons" />
+                            <option value="Zippers" />
+                            <option value="Thread" />
+                            <option value="Hardware" />
+                            <option value="Dye & Chemical" />
+                        </datalist>
+                        <span asp-validation-for="Category" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Unit" class="form-label">Unit of Measurement <span class="text-danger">*</span></label>
+                        <input asp-for="Unit" class="form-control" list="unitOptions" placeholder="e.g. Meter, Kg, Roll, Yard..." />
+                        <datalist id="unitOptions">
+                            <option value="Meter" />
+                            <option value="Kilogram" />
+                            <option value="Roll" />
+                            <option value="Yard" />
+                            <option value="Piece" />
+                            <option value="Pack" />
+                            <option value="Ton" />
+                        </datalist>
+                        <span asp-validation-for="Unit" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Price and Initial Quantity -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="UnitPrice" class="form-label">Unit Price (EGP) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">EGP</span>
+                            <input asp-for="UnitPrice" type="number" step="0.01" min="0.01" class="form-control" placeholder="0.00" />
+                        </div>
+                        <span asp-validation-for="UnitPrice" class="text-danger small"></span>
+                        <div class="form-text small">Must be strictly greater than 0 (BR-01).</div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="AvailableQuantity" class="form-label">Initial Available Quantity <span class="text-danger">*</span></label>
+                        <input asp-for="AvailableQuantity" type="number" step="1" min="0" class="form-control" placeholder="0" />
+                        <span asp-validation-for="AvailableQuantity" class="text-danger small"></span>
+                        <div class="form-text small">Must be 0 or greater (BR-01). At 0 units, shows Out of Stock (BR-06).</div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label">Description / Technical Specifications</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" 
+                              placeholder="Detail composition, yarn count, weight in GSM, width, available colors, and minimum order notes..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a asp-controller="Materials" asp-action="Manage" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        Publish Listing
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
