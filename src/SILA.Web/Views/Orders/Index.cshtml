@@ -1,0 +1,192 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T3.2 | Owner: P1 | Status: DONE
+   What exists: Material Orders list view with status filter tabs, summary counts, counterparty details, and link to Details
+   What is left: // TODO(T3.4): Wire into unified Sent/Received requests and orders dashboard
+   Depends on:  T1.1 (MaterialOrder, MaterialOrderStatus), T3.2 (OrdersController, OrderIndexViewModel)
+   Used by:     Suppliers (incoming orders) and Buyers (purchases)
+   How to test: Visit /Orders as Buyer or Supplier; click filter tabs; verify status filtering and order counts
+   Notes:       BR-07: Displays only orders belonging to the user's organization
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.ViewModels.Orders
+@using SILA.Web.Models.Enums
+@model OrderIndexViewModel
+@{
+    var pageHeading = Model.IsSupplier ? "Incoming Material Orders" : "My Material Orders";
+    var counterpartyHeader = Model.IsSupplier ? "Buyer Organization" : "Supplier Organization";
+    ViewData["Title"] = pageHeading;
+}
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold" style="color: var(--sila-forest);">@pageHeading</h1>
+            <p class="text-muted mb-0">
+                @(Model.IsSupplier 
+                    ? "Manage incoming raw material orders from brands and factories." 
+                    : "Track your raw material orders, confirmations, and deliveries.")
+            </p>
+        </div>
+
+        @if (!Model.IsSupplier)
+        {
+            <div>
+                <a asp-controller="Materials" asp-action="Index" class="btn btn-outline-primary">
+                    🔍 Browse Material Catalog
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <strong>✓ Success:</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <strong>⚠️ Notice:</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Status Filter Tabs / Pills -->
+    <div class="card p-2 mb-4 border shadow-sm bg-sand-light">
+        <ul class="nav nav-pills gap-1 flex-wrap">
+            <li class="nav-item">
+                <a class="nav-link @(!Model.CurrentStatus.HasValue ? "active bg-forest" : "text-dark")" 
+                   asp-controller="Orders" asp-action="Index">
+                    All <span class="badge bg-white text-dark ms-1">@Model.TotalCount</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentStatus == MaterialOrderStatus.PendingReview ? "active bg-forest" : "text-dark")" 
+                   asp-controller="Orders" asp-action="Index" asp-route-status="@MaterialOrderStatus.PendingReview">
+                    Pending Review <span class="badge bg-white text-dark ms-1">@Model.PendingCount</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentStatus == MaterialOrderStatus.Confirmed ? "active bg-forest" : "text-dark")" 
+                   asp-controller="Orders" asp-action="Index" asp-route-status="@MaterialOrderStatus.Confirmed">
+                    Confirmed <span class="badge bg-white text-dark ms-1">@Model.ConfirmedCount</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentStatus == MaterialOrderStatus.Dispatched ? "active bg-forest" : "text-dark")" 
+                   asp-controller="Orders" asp-action="Index" asp-route-status="@MaterialOrderStatus.Dispatched">
+                    Dispatched <span class="badge bg-white text-dark ms-1">@Model.DispatchedCount</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentStatus == MaterialOrderStatus.Delivered ? "active bg-forest" : "text-dark")" 
+                   asp-controller="Orders" asp-action="Index" asp-route-status="@MaterialOrderStatus.Delivered">
+                    Delivered <span class="badge bg-white text-dark ms-1">@Model.DeliveredCount</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentStatus == MaterialOrderStatus.Cancelled ? "active bg-forest" : "text-dark")" 
+                   asp-controller="Orders" asp-action="Index" asp-route-status="@MaterialOrderStatus.Cancelled">
+                    Cancelled <span class="badge bg-white text-dark ms-1">@Model.CancelledCount</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentStatus == MaterialOrderStatus.Rejected ? "active bg-forest" : "text-dark")" 
+                   asp-controller="Orders" asp-action="Index" asp-route-status="@MaterialOrderStatus.Rejected">
+                    Rejected <span class="badge bg-white text-dark ms-1">@Model.RejectedCount</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Orders Table or Empty State -->
+    @if (!Model.Orders.Any())
+    {
+        <div class="card p-5 text-center my-4 border-0 shadow-sm bg-sand-light">
+            <div class="display-6 mb-3 text-muted">📦</div>
+            <h3 class="h5 fw-bold" style="color: var(--sila-forest);">No Orders Found</h3>
+            <p class="text-muted small mb-3">
+                @(Model.CurrentStatus.HasValue 
+                    ? $"There are currently no orders with status '{Model.CurrentStatus.Value}'." 
+                    : "No material orders have been recorded yet.")
+            </p>
+            @if (!Model.IsSupplier)
+            {
+                <div>
+                    <a asp-controller="Materials" asp-action="Index" class="btn btn-primary btn-sm">
+                        Browse Materials to Place an Order
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="width: 10%;">Order #</th>
+                            <th scope="col" style="width: 18%;">Date Placed</th>
+                            <th scope="col" style="width: 25%;">@counterpartyHeader</th>
+                            <th scope="col" class="text-center" style="width: 12%;">Items</th>
+                            <th scope="col" class="text-end" style="width: 15%;">Total (EGP)</th>
+                            <th scope="col" class="text-center" style="width: 10%;">Status</th>
+                            <th scope="col" class="text-end" style="width: 10%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.Orders)
+                        {
+                            var counterpartyName = Model.IsSupplier 
+                                ? order.BuyerOrganization?.Name ?? "Buyer" 
+                                : order.SupplierOrganization?.Name ?? "Supplier";
+
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-forest">#@order.Id</span>
+                                </td>
+                                <td>
+                                    <div>@order.CreatedAt.ToString("dd MMM yyyy")</div>
+                                    <small class="text-muted">@order.CreatedAt.ToString("HH:mm") UTC</small>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@counterpartyName</div>
+                                    @if (Model.IsSupplier && order.BuyerOrganization != null)
+                                    {
+                                        <small class="text-muted">@order.BuyerOrganization.City · @order.BuyerOrganization.Type</small>
+                                    }
+                                    else if (!Model.IsSupplier && order.SupplierOrganization != null)
+                                    {
+                                        <small class="text-muted">@order.SupplierOrganization.City</small>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">
+                                        @order.Lines.Count @(order.Lines.Count == 1 ? "item" : "items")
+                                    </span>
+                                </td>
+                                <td class="text-end fw-bold font-monospace text-forest">
+                                    @order.TotalAmount.ToString("N2") EGP
+                                </td>
+                                <td class="text-center">
+                                    <partial name="_StatusBadge" model="order.Status" />
+                                </td>
+                                <td class="text-end">
+                                    <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.Id" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

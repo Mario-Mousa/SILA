@@ -1,0 +1,177 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T3.2 | Owner: P1 | Status: DONE
+   What exists: Material Order checkout and summary view with quantity selection and price preview in EGP
+   What is left: // TODO(T3.4): Wire into unified Sent/Received requests and orders dashboard
+   Depends on:  T1.1 (MaterialListing), T3.2 (OrdersController, OrderCheckoutViewModel)
+   Used by:     Brand and Factory users placing orders
+   How to test: Visit /Orders/Checkout?listingId={id}&quantity={qty} -> submit order -> redirect to Details
+   Notes:       BR-01: Quantities are positive. BR-02: Single supplier. BR-04: Line snapshots. D-10: Currency in EGP.
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.ViewModels.Orders
+@model OrderCheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout - Material Order";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Materials" asp-action="Index">Materials</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Materials" asp-action="Details" asp-route-id="@Model.ListingId">@Model.ListingName</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="h3 fw-bold" style="color: var(--sila-forest);">Review & Place Material Order</h1>
+        <p class="text-muted">Review unit pricing, verify supplier availability, and submit your raw material order.</p>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Notice:</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div asp-validation-summary="All" class="validation-summary"></div>
+
+    <form asp-controller="Orders" asp-action="SubmitCheckout" method="post" id="checkoutForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="ListingId" value="@Model.ListingId" />
+        <input type="hidden" name="SupplierOrgId" value="@Model.SupplierOrgId" />
+
+        <div class="row g-4">
+            <!-- Left Column: Item Review & Supplier Info -->
+            <div class="col-12 col-lg-8">
+                <!-- Material Item Card -->
+                <div class="card p-4 mb-4 shadow-sm border">
+                    <h5 class="fw-bold mb-3" style="color: var(--sila-forest);">Selected Material</h5>
+                    
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center pb-3 border-bottom mb-3">
+                        <div>
+                            <span class="badge bg-sand text-forest border mb-1">@Model.Category</span>
+                            <h4 class="h5 fw-bold mb-1">@Model.ListingName</h4>
+                            <p class="text-muted small mb-0">Supplier: <strong>@Model.SupplierName</strong></p>
+                        </div>
+                        <div class="text-sm-end mt-2 mt-sm-0">
+                            <span class="fs-5 fw-bold text-forest">@Model.UnitPrice.ToString("N2") EGP</span>
+                            <span class="text-muted small">/ @Model.Unit</span>
+                        </div>
+                    </div>
+
+                    <!-- Quantity Input Form -->
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-sm-6">
+                            <label for="orderQuantity" class="form-label fw-semibold">Order Quantity (@Model.Unit):</label>
+                            <div class="input-group">
+                                <input type="number" id="orderQuantity" name="Quantity" class="form-control" 
+                                       value="@Model.Quantity" min="1" max="@Model.AvailableQuantity" required />
+                                <span class="input-group-text bg-sand">@Model.Unit</span>
+                            </div>
+                            <span class="form-text text-muted small">
+                                Available stock: <strong>@Model.AvailableQuantity @Model.Unit</strong>
+                            </span>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label fw-semibold text-muted">Item Subtotal:</label>
+                            <div class="fs-5 fw-bold text-forest" id="itemSubtotal">
+                                @Model.EstimatedTotal.ToString("N2") EGP
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supplier Information Card -->
+                <div class="card p-4 shadow-sm border bg-sand-light">
+                    <h5 class="fw-bold fs-6 mb-3" style="color: var(--sila-forest);">Supplier Information</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="text-muted small">Company / Organization:</div>
+                            <div class="fw-semibold">@Model.SupplierName</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-muted small">Location:</div>
+                            <div class="fw-semibold">@Model.SupplierCity</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-muted small">Contact Phone:</div>
+                            <div class="fw-semibold">@Model.SupplierPhone</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-muted small">Single Supplier Rule:</div>
+                            <div class="text-success small fw-semibold">✓ Verified single-supplier order (BR-02)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Order Summary & Place Order CTA -->
+            <div class="col-12 col-lg-4">
+                <div class="card p-4 shadow-sm border sticky-top" style="top: 2rem;">
+                    <h5 class="fw-bold mb-3" style="color: var(--sila-forest);">Order Summary</h5>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Unit Price:</span>
+                        <span>@Model.UnitPrice.ToString("N2") EGP</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Quantity:</span>
+                        <span><span id="summaryQuantity">@Model.Quantity</span> @Model.Unit</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-baseline mb-4">
+                        <span class="fs-6 fw-bold">Total Amount:</span>
+                        <div class="text-end">
+                            <div class="fs-4 fw-bold text-forest" id="summaryTotal">@Model.EstimatedTotal.ToString("N2") EGP</div>
+                            <small class="text-muted">Includes listed unit price snapshot</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary small mb-3">
+                        ℹ️ <strong>Workflow Notice:</strong> Submitting places the order in <strong>PendingReview</strong> status. 
+                        The supplier reviews available stock and confirms the order before inventory is deducted (BR-03).
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitOrderBtn">
+                            Confirm & Place Order
+                        </button>
+                        <a asp-controller="Materials" asp-action="Details" asp-route-id="@Model.ListingId" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const unitPrice = @Model.UnitPrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const qtyInput = document.getElementById('orderQuantity');
+        const itemSubtotal = document.getElementById('itemSubtotal');
+        const summaryQuantity = document.getElementById('summaryQuantity');
+        const summaryTotal = document.getElementById('summaryTotal');
+
+        function updateTotals() {
+            let qty = parseInt(qtyInput.value) || 0;
+            if (qty < 1) qty = 1;
+            const total = qty * unitPrice;
+            const formattedTotal = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EGP';
+            itemSubtotal.textContent = formattedTotal;
+            summaryQuantity.textContent = qty;
+            summaryTotal.textContent = formattedTotal;
+        }
+
+        qtyInput.addEventListener('input', updateTotals);
+        qtyInput.addEventListener('change', updateTotals);
+    </script>
+}
