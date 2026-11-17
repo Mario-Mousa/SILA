@@ -1,0 +1,129 @@
+@* HANDOFF | Task: T3.3 | Owner: P2 | Status: DONE
+   What exists: Request overview, offer timeline and state-gated controls for both parties.
+   What is left: // TODO(T4.3): Check final copy, contrast and breakpoints.
+   Depends on: T1.1 (request statuses/offers), T2.4 (ownership), T1.3 (shared layout).
+   Used by: ManufacturingRequestsController.Details and decision redirects.
+*@
+@model SILA.Web.Models.ViewModels.ManufacturingRequests.ManufacturingRequestDetailsViewModel
+@{
+    ViewData["Title"] = $"Manufacturing Request #{Model.Id}";
+}
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div>
+        <p class="text-uppercase small fw-semibold text-muted mb-1">Manufacturing Request</p>
+        <h1 class="h2 mb-2">Request #@Model.Id · @Model.ProductType</h1>
+        <p class="text-muted mb-0">@Model.BrandName <span aria-hidden="true">→</span> @Model.FactoryName</p>
+    </div>
+    <span class="status-badge" aria-label="Status: @Model.Status">@Model.Status</span>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="status">@successMessage</div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="card p-4 mb-4" aria-labelledby="request-overview-heading">
+            <h2 id="request-overview-heading" class="h5 mb-3">Request overview</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-5">Quantity</dt><dd class="col-sm-7">@Model.Quantity</dd>
+                <dt class="col-sm-5">Current offer per unit</dt><dd class="col-sm-7">EGP @Model.CurrentOfferPrice.ToString("N2")</dd>
+                <dt class="col-sm-5">Material / fabric</dt><dd class="col-sm-7">@Model.MaterialDescription</dd>
+                <dt class="col-sm-5">Design specification</dt><dd class="col-sm-7">@(string.IsNullOrWhiteSpace(Model.DesignSpecification) ? "Not provided" : Model.DesignSpecification)</dd>
+                <dt class="col-sm-5">Submitted</dt><dd class="col-sm-7"><time datetime="@Model.CreatedAt.ToString("O")">@Model.CreatedAt.ToLocalTime().ToString("g")</time></dd>
+                @if (!string.IsNullOrWhiteSpace(Model.AttachmentPath))
+                {
+                    <dt class="col-sm-5">Design attachment</dt><dd class="col-sm-7"><a href="@Model.AttachmentPath" rel="noopener noreferrer">Open attachment or link</a></dd>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <dt class="col-sm-5">Notes</dt><dd class="col-sm-7">@Model.Notes</dd>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.DecisionNote))
+                {
+                    <dt class="col-sm-5">Latest decision note</dt><dd class="col-sm-7">@Model.DecisionNote</dd>
+                }
+            </dl>
+        </section>
+
+        <section class="card p-4" aria-labelledby="negotiation-heading">
+            <h2 id="negotiation-heading" class="h5 mb-1">Negotiation timeline</h2>
+            <p class="text-muted small mb-3">Offers are shown oldest to newest. Supplier Material Order prices are not negotiated here.</p>
+            <partial name="_OfferTimeline" model="Model.Offers" />
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        @if (Model.CanFactoryRespond)
+        {
+            <section class="card p-4 mb-4" aria-labelledby="factory-actions-heading">
+                <h2 id="factory-actions-heading" class="h5">Factory decision</h2>
+                <form asp-action="Accept" method="post" class="mb-3">
+                    <input type="hidden" name="RequestId" value="@Model.Id" />
+                    <label class="form-label" for="accept-note">Note (optional)</label>
+                    <input class="form-control mb-2" id="accept-note" name="Note" maxlength="500" />
+                    <button type="submit" class="btn btn-primary w-100">Accept request</button>
+                </form>
+                <form asp-action="CounterOffer" method="post" class="mb-3">
+                    <input type="hidden" name="RequestId" value="@Model.Id" />
+                    <label class="form-label" for="counter-price">Counter-offer per unit (EGP)</label>
+                    <input class="form-control mb-2" id="counter-price" name="OfferPrice" type="number" min="0.01" step="0.01" required />
+                    <label class="form-label" for="counter-note">Reason or note</label>
+                    <textarea class="form-control mb-2" id="counter-note" name="Note" rows="3" maxlength="500" required></textarea>
+                    <button type="submit" class="btn btn-outline-primary w-100">Send counter-offer</button>
+                </form>
+                <form asp-action="Reject" method="post">
+                    <input type="hidden" name="RequestId" value="@Model.Id" />
+                    <label class="form-label" for="factory-reject-note">Note (optional)</label>
+                    <input class="form-control mb-2" id="factory-reject-note" name="Note" maxlength="500" />
+                    <button type="submit" class="btn btn-outline-danger w-100">Reject request</button>
+                </form>
+            </section>
+        }
+
+        @if (Model.CanBrandRespondToCounterOffer)
+        {
+            <section class="card p-4 mb-4" aria-labelledby="brand-actions-heading">
+                <h2 id="brand-actions-heading" class="h5">Review counter-offer</h2>
+                <form asp-action="AcceptCounterOffer" method="post" class="mb-3">
+                    <input type="hidden" name="RequestId" value="@Model.Id" />
+                    <label class="form-label" for="brand-accept-note">Note (optional)</label>
+                    <input class="form-control mb-2" id="brand-accept-note" name="Note" maxlength="500" />
+                    <button type="submit" class="btn btn-primary w-100">Accept counter-offer</button>
+                </form>
+                <form asp-action="ReviseOffer" method="post" class="mb-3">
+                    <input type="hidden" name="RequestId" value="@Model.Id" />
+                    <label class="form-label" for="revised-price">Revised offer per unit (EGP)</label>
+                    <input class="form-control mb-2" id="revised-price" name="OfferPrice" type="number" min="0.01" step="0.01" required />
+                    <label class="form-label" for="revised-note">Note</label>
+                    <textarea class="form-control mb-2" id="revised-note" name="Note" rows="3" maxlength="500" required></textarea>
+                    <button type="submit" class="btn btn-outline-primary w-100">Send revised offer</button>
+                </form>
+                <form asp-action="RejectCounterOffer" method="post">
+                    <input type="hidden" name="RequestId" value="@Model.Id" />
+                    <label class="form-label" for="brand-reject-note">Note (optional)</label>
+                    <input class="form-control mb-2" id="brand-reject-note" name="Note" maxlength="500" />
+                    <button type="submit" class="btn btn-outline-danger w-100">Reject counter-offer</button>
+                </form>
+            </section>
+        }
+
+        @if (Model.CanBrandCancel)
+        {
+            <section class="card p-4" aria-labelledby="cancel-heading">
+                <h2 id="cancel-heading" class="h5">Cancel request</h2>
+                <p class="text-muted">You can cancel while the request is waiting for a decision.</p>
+                <form asp-action="Cancel" method="post">
+                    <input type="hidden" name="RequestId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-danger">Cancel Manufacturing Request</button>
+                </form>
+            </section>
+        }
+    </div>
+</div>
