@@ -1,0 +1,29 @@
+@* HANDOFF | Task: T3.3 | Owner: P2 | Status: DONE
+   What exists: Chronological display of each Manufacturing Request offer round.
+   What is left: // TODO(T4.3): Review final date formatting and responsive spacing.
+   Depends on: T1.1 (RequestOffer); T3.3 offer history view model.
+   Used by: Views/ManufacturingRequests/Details.cshtml.
+*@
+@model IReadOnlyList<SILA.Web.Models.ViewModels.ManufacturingRequests.OfferTimelineViewModel>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted mb-0">No offers have been recorded.</p>
+}
+else
+{
+    <ol class="list-unstyled mb-0">
+        @foreach (var offer in Model)
+        {
+            <li class="border-start border-3 ps-3 pb-4 ms-2 position-relative">
+                <span class="badge rounded-pill text-bg-light border mb-2">Round @offer.RoundNumber</span>
+                <h3 class="h6 mb-1">@offer.ActorName offered EGP @offer.UnitPrice.ToString("N2") per unit</h3>
+                <time class="small text-muted" datetime="@offer.CreatedAt.ToString("O")">@offer.CreatedAt.ToLocalTime().ToString("g")</time>
+                @if (!string.IsNullOrWhiteSpace(offer.Note))
+                {
+                    <p class="mb-0 mt-2">@offer.Note</p>
+                }
+            </li>
+        }
+    </ol>
+}
