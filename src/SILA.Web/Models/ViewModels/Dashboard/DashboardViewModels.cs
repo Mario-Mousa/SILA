@@ -127,3 +127,4 @@ public class RoleDashboardViewModel
     // Recent Activity widget (latest 5 items)
     public List<SentReceivedItemViewModel> RecentActivity { get; set; } = new();
 }
+
