@@ -1,19 +1,19 @@
 @* ═══════════ HANDOFF ═══════════════════════════════════
-   Task:        T2.3 | Owner: P3 | Status: DONE
-   What exists: Responsive Factory Owner Dashboard shell with metric placeholders and quick actions
-   What is left: // TODO(T3.4): P4 to bind live counts from ManufacturingRequestService, MaterialOrderService, and NotificationService
-   Depends on:  T1.1 (Organization, VerificationStatus), T1.3 (_StatusBadge, UI tokens)
+   Task:        T3.4 | Owner: P4 | Status: DONE
+   What exists: Live Factory Owner Dashboard with live metric cards, pending request review alerts,
+                and recent activity widget combining incoming manufacturing requests and material orders
+   What is left: none
+   Depends on:  T1.1 (Organization), T1.3 (UI Tokens, _StatusBadge), T3.4 (RoleDashboardViewModel)
    Used by:     Factory Owners upon login
-   How to test: Sign in as Factory Owner; navigate to /Dashboard; verify header, badges, metric cards, and quick actions
-   Notes:       Follows wireframes.md lines 160-167; displays incoming production requests and counter-offer management
+   How to test: Sign in as factory1@sila.com; verify live counts, pending requests to review, and recent activity
+   Notes:       Follows wireframes.md and project design guidelines; responsive across viewports
    ═══════════════════════════════════════════════════════ *@
-@using SILA.Web.Models.Entities
 @using SILA.Web.Models.Enums
-@model Organization
+@model SILA.Web.Models.ViewModels.Dashboard.RoleDashboardViewModel
 @{
     ViewData["Title"] = "Factory Dashboard";
-    var orgName = Model?.Name ?? ViewBag.FullName ?? "Factory Workspace";
-    var isVerified = Model?.VerificationStatus == VerificationStatus.Verified;
+    var orgName = Model.Organization?.Name ?? Model.FullName;
+    var isVerified = Model.Organization?.VerificationStatus == VerificationStatus.Verified;
 }
 
 <div class="dashboard-shell py-2">
@@ -22,22 +22,25 @@
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <h1 class="h3 fw-bold mb-0" style="color: var(--sila-forest);">@orgName</h1>
-                @if (Model != null)
+                @if (Model.Organization != null)
                 {
-                    <partial name="_StatusBadge" model="Model.VerificationStatus" />
+                    <partial name="_StatusBadge" model="Model.Organization.VerificationStatus" />
                 }
             </div>
             <p class="text-muted mb-0">Factory Owner Workspace · Receive production requests, propose counter-offers, and buy raw fabrics</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-secondary btn-sm">
                 ⚙️ Factory Profile
             </a>
             <a asp-controller="Materials" asp-action="Index" class="btn btn-outline-primary btn-sm">
-                🧵 Sourcing Materials
+                🧵 Source Materials
             </a>
-            <a asp-controller="Requests" asp-action="Index" class="btn btn-primary btn-sm">
+            <a asp-controller="Dashboard" asp-action="Requests" class="btn btn-primary btn-sm">
                 📋 Review Requests
+            </a>
+            <a asp-controller="History" asp-action="Index" class="btn btn-outline-dark btn-sm">
+                📜 Audit History
             </a>
         </div>
     </div>
@@ -51,7 +54,7 @@
                 <div>
                     <h2 class="h6 fw-bold mb-0">Factory License Verification Pending</h2>
                     <p class="small mb-0 text-muted">
-                        Your factory account is currently <strong>@(Model?.VerificationStatus.ToString() ?? "Unverified")</strong>. 
+                        Your factory account is currently <strong>@(Model.Organization?.VerificationStatus.ToString() ?? "Unverified")</strong>. 
                         Brand Owners cannot send you production requests until your factory operating license is approved by Admin.
                     </p>
                 </div>
@@ -62,47 +65,47 @@
         </div>
     }
 
-    <!-- Metric Cards Grid -->
+    <!-- Live Metric Cards Grid -->
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-4">
-            <div class="card p-3 border-0 shadow-sm sila-metric-card h-100">
+            <div class="card p-3 border-0 shadow-sm sila-metric-card h-100 @(Model.Metric1Value > 0 ? "border-start border-4 border-warning" : "")">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small fw-semibold">Requests to Review</span>
+                    <span class="text-muted small fw-semibold">@Model.Metric1Label</span>
                     <span class="metric-icon">📥</span>
                 </div>
                 <div class="d-flex align-items-baseline gap-2">
-                    <span class="fs-2 fw-bold text-forest">0</span>
-                    <span class="badge bg-sand text-muted small">PendingApproval</span>
+                    <span class="fs-2 fw-bold text-forest">@Model.Metric1Value</span>
+                    <span class="status-badge">@Model.Metric1StatusBadge</span>
                 </div>
-                <small class="text-muted mt-2 d-block">New production requests</small>
+                <small class="text-muted mt-2 d-block">@Model.Metric1Subtext</small>
             </div>
         </div>
 
         <div class="col-12 col-sm-4">
             <div class="card p-3 border-0 shadow-sm sila-metric-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small fw-semibold">Open Negotiations</span>
+                    <span class="text-muted small fw-semibold">@Model.Metric2Label</span>
                     <span class="metric-icon">🤝</span>
                 </div>
                 <div class="d-flex align-items-baseline gap-2">
-                    <span class="fs-2 fw-bold" style="color: var(--sila-clay);">0</span>
-                    <span class="badge bg-sand text-muted small">CounterOffered</span>
+                    <span class="fs-2 fw-bold" style="color: var(--sila-clay);">@Model.Metric2Value</span>
+                    <span class="status-badge">@Model.Metric2StatusBadge</span>
                 </div>
-                <small class="text-muted mt-2 d-block">Counter-offers in discussion</small>
+                <small class="text-muted mt-2 d-block">@Model.Metric2Subtext</small>
             </div>
         </div>
 
         <div class="col-12 col-sm-4">
             <div class="card p-3 border-0 shadow-sm sila-metric-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small fw-semibold">Material Orders Placed</span>
+                    <span class="text-muted small fw-semibold">@Model.Metric3Label</span>
                     <span class="metric-icon">📦</span>
                 </div>
                 <div class="d-flex align-items-baseline gap-2">
-                    <span class="fs-2 fw-bold text-forest">0</span>
-                    <span class="badge bg-sand text-muted small">Active</span>
+                    <span class="fs-2 fw-bold text-forest">@Model.Metric3Value</span>
+                    <span class="status-badge">@Model.Metric3StatusBadge</span>
                 </div>
-                <small class="text-muted mt-2 d-block">Raw fabrics for production</small>
+                <small class="text-muted mt-2 d-block">@Model.Metric3Subtext</small>
             </div>
         </div>
     </div>
@@ -110,16 +113,16 @@
     <!-- Quick Actions Row -->
     <div class="card p-3 mb-4 border-0 shadow-sm bg-sand-light">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <span class="fw-semibold small text-muted">Factory Operations:</span>
+            <span class="fw-semibold small text-muted">Quick Actions:</span>
             <div class="d-flex flex-wrap gap-2">
-                <a asp-controller="Requests" asp-action="Index" class="btn btn-sm btn-primary">
-                    View Incoming Requests
+                <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="received" class="btn btn-sm btn-primary">
+                    Review Incoming Requests (@Model.Metric1Value)
                 </a>
                 <a asp-controller="Materials" asp-action="Index" class="btn btn-sm btn-outline-primary">
-                    Source Fabrics from Suppliers
+                    Buy Raw Fabrics
                 </a>
-                <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-secondary">
-                    Update Facility Capabilities
+                <a asp-controller="Dashboard" asp-action="Requests" class="btn btn-sm btn-outline-secondary">
+                    Sent & Received Hub &rarr;
                 </a>
             </div>
         </div>
@@ -127,49 +130,88 @@
 
     <!-- Activity Sections Grid -->
     <div class="row g-4">
-        <!-- Incoming Manufacturing Requests Shell -->
+        <!-- Live Recent Activity Widget -->
         <div class="col-12 col-lg-8">
             <div class="card p-4 border-0 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h6 fw-bold mb-0">Incoming Manufacturing Requests</h2>
-                    <a asp-controller="Requests" asp-action="Index" class="small text-decoration-none">Manage Requests &rarr;</a>
+                    <h2 class="h6 fw-bold mb-0">Recent Activity (Production & Materials)</h2>
+                    <a asp-controller="Dashboard" asp-action="Requests" class="small text-decoration-none">View All Hub &rarr;</a>
                 </div>
-                <!-- Placeholder State -->
-                <div class="text-center py-5 text-muted">
-                    <span class="fs-1 d-block mb-2">🏭</span>
-                    <p class="mb-2 fw-semibold">No incoming manufacturing requests yet</p>
-                    <p class="small mx-auto" style="max-width: 26rem;">
-                        Verified factories are visible in the public directory where clothing brands can discover your manufacturing capabilities and send production proposals.
-                    </p>
-                    <a asp-controller="Profile" asp-action="Index" class="btn btn-sm btn-outline-primary mt-2">
-                        Review Factory Profile
-                    </a>
-                </div>
+
+                @if (!Model.RecentActivity.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <span class="fs-1 d-block mb-2">📥</span>
+                        <p class="mb-2 fw-semibold">No manufacturing requests received yet</p>
+                        <p class="small mx-auto" style="max-width: 24rem;">
+                            Ensure your factory operating license is approved so brand owners can find your plant in the directory.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var item in Model.RecentActivity)
+                        {
+                            <div class="list-group-item px-0 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start gap-2 border-bottom">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge @(item.WorkflowType == "ManufacturingRequest" ? "bg-primary" : "bg-info")" style="font-size: 0.72rem;">
+                                            @item.WorkflowTypeLabel
+                                        </span>
+                                        <span class="text-muted small">@item.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                    <h3 class="h6 fw-bold mb-1">@item.Title</h3>
+                                    <p class="small text-muted mb-0">
+                                        <span>@item.CounterpartyRole: <strong>@item.CounterpartyName</strong></span>
+                                        <span class="mx-2">·</span>
+                                        <span>@item.FormattedAmount</span>
+                                    </p>
+                                </div>
+                                <div class="d-flex flex-column align-items-sm-end gap-1 mt-2 mt-sm-0">
+                                    <partial name="_StatusBadge" model="item.Status" />
+                                    <a href="@item.DetailsUrl" class="small fw-semibold text-decoration-none mt-1">
+                                        View & Respond &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
             </div>
         </div>
 
-        <!-- Recent Material Sourcing Orders Shell -->
+        <!-- Notification Center & Shortcuts -->
         <div class="col-12 col-lg-4">
             <div class="card p-4 border-0 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h6 fw-bold mb-0">Fabric Orders Placed</h2>
-                    <a asp-controller="Orders" asp-action="Index" class="small text-decoration-none">View Orders &rarr;</a>
-                </div>
-                <!-- Placeholder State -->
-                <div class="text-center py-4 text-muted border-bottom mb-3" style="border-color: var(--sila-line) !important;">
-                    <span class="fs-2 d-block mb-1">🧵</span>
-                    <p class="small mb-0">No fabric orders in progress</p>
+                    <h2 class="h6 fw-bold mb-0">Notification Center</h2>
+                    <a asp-controller="Notifications" asp-action="Index" class="small text-decoration-none">Inbox (@Model.UnreadNotificationsCount) &rarr;</a>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h2 class="h6 fw-bold mb-0">Recent Notifications</h2>
-                    <a asp-controller="Notifications" asp-action="Index" class="small text-decoration-none">Inbox &rarr;</a>
-                </div>
-                <div class="text-center py-3 text-muted">
-                    <span class="small">No new notifications</span>
+                @if (Model.UnreadNotificationsCount > 0)
+                {
+                    <div class="alert alert-info py-2 px-3 small rounded-3 mb-3">
+                        🔔 You have <strong>@Model.UnreadNotificationsCount</strong> unread notification@(Model.UnreadNotificationsCount > 1 ? "s" : "").
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4 text-muted border-bottom mb-3" style="border-color: var(--sila-line) !important;">
+                        <span class="fs-2 d-block mb-1">✨</span>
+                        <p class="small mb-0">No new alerts right now.</p>
+                    </div>
+                }
+
+                <div class="mt-auto pt-3 border-top">
+                    <h3 class="small fw-bold text-muted text-uppercase mb-2">Shortcuts</h3>
+                    <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+                        <li><a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="received" class="text-decoration-none">📥 Received Manufacturing Requests</a></li>
+                        <li><a asp-controller="Orders" asp-action="Index" class="text-decoration-none">📦 My Raw Material Orders</a></li>
+                        <li><a asp-controller="History" asp-action="Index" class="text-decoration-none">📜 Organization Audit Log</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
