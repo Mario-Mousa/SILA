@@ -1,0 +1,258 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T3.4 | Owner: P4 | Status: DONE
+   What exists: Unified Sent / Received Hub with two distinct tabs (Sent and Received) combining
+                manufacturing requests and material orders visually while strictly segregating data
+   What is left: none
+   Depends on:  T1.1 (Organization), T1.3 (UI Tokens, _StatusBadge), T3.4 (SentReceivedHubViewModel)
+   Used by:     Brand, Factory, and Supplier authenticated users via /Requests
+   How to test: Visit /Requests as Brand, Factory, and Supplier; verify Sent and Received tab contents and empty states
+   Notes:       Requirement 1: Visual aggregation only; workflows remain completely separate records and lifecycles
+   ═══════════════════════════════════════════════════════ *@
+@using SILA.Web.Models.ViewModels.Dashboard
+@model SentReceivedHubViewModel
+@{
+    ViewData["Title"] = "Requests & Orders Hub";
+    var isSentActive = Model.ActiveTab == "sent";
+    var isReceivedActive = Model.ActiveTab == "received";
+}
+
+<div class="dashboard-shell py-2">
+    <!-- Hub Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold mb-1" style="color: var(--sila-forest);">Requests & Orders Hub</h1>
+            <p class="text-muted mb-0">Unified tracking center for production contracts and raw material orders</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            @if (Model.UserRole == "Brand")
+            {
+                <a asp-controller="Home" asp-action="Factories" class="btn btn-primary btn-sm">
+                    + New Manufacturing Request
+                </a>
+                <a asp-controller="Materials" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                    + Buy Raw Materials
+                </a>
+            }
+            else if (Model.UserRole == "Factory")
+            {
+                <a asp-controller="Materials" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                    + Buy Raw Materials
+                </a>
+            }
+            else if (Model.UserRole == "Supplier")
+            {
+                <a asp-controller="Materials" asp-action="Create" class="btn btn-primary btn-sm">
+                    + Add Material Listing
+                </a>
+            }
+            <a asp-controller="History" asp-action="Index" class="btn btn-outline-dark btn-sm">
+                📜 Audit History
+            </a>
+        </div>
+    </div>
+
+    @if (Model.ActionRequiredCount > 0)
+    {
+        <div class="alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-4 rounded-3 shadow-sm">
+            <span class="fs-5">⚡</span>
+            <div>
+                <strong>Action Required:</strong> You have <strong>@Model.ActionRequiredCount</strong> item@(Model.ActionRequiredCount > 1 ? "s" : "") awaiting your response or review.
+            </div>
+        </div>
+    }
+
+    <!-- Two Distinct Tabs: Sent vs Received -->
+    <div class="card border-0 shadow-sm overflow-hidden mb-4">
+        <div class="card-header bg-white border-bottom p-0">
+            <ul class="nav nav-tabs card-header-tabs m-0 px-3 pt-2 border-0" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link py-3 px-4 fw-semibold @(isSentActive ? "active text-forest border-bottom border-3 border-success" : "text-muted")"
+                       asp-action="Requests" asp-route-tab="sent" role="tab">
+                        📤 Sent Items
+                        <span class="badge rounded-pill bg-secondary ms-2 small">@Model.SentCount</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link py-3 px-4 fw-semibold @(isReceivedActive ? "active text-forest border-bottom border-3 border-success" : "text-muted")"
+                       asp-action="Requests" asp-route-tab="received" role="tab">
+                        📥 Received Items
+                        <span class="badge rounded-pill @(Model.ReceivedItems.Any(i => i.RequiresAction) ? "bg-warning text-dark" : "bg-secondary") ms-2 small">
+                            @Model.ReceivedCount
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body p-4">
+            @if (isSentActive)
+            {
+                <!-- SENT TAB CONTENT -->
+                @if (!Model.SentItems.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <span class="fs-1 d-block mb-2">📤</span>
+                        <h2 class="h5 fw-bold mb-1">No sent requests or orders yet</h2>
+                        @if (Model.UserRole == "Supplier")
+                        {
+                            <p class="small mx-auto mb-3" style="max-width: 26rem;">
+                                Suppliers do not send manufacturing requests. To view and manage your fabric catalog, check your active listings.
+                            </p>
+                            <a asp-controller="Materials" asp-action="Manage" class="btn btn-sm btn-outline-primary">
+                                Manage Material Listings
+                            </a>
+                        }
+                        else
+                        {
+                            <p class="small mx-auto mb-3" style="max-width: 26rem;">
+                                You have not submitted any manufacturing requests or placed material orders yet.
+                            </p>
+                            <a asp-controller="Home" asp-action="Factories" class="btn btn-sm btn-primary">
+                                Explore Verified Factories
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase text-muted">
+                                <tr>
+                                    <th scope="col" style="min-width: 140px;">Type</th>
+                                    <th scope="col" style="min-width: 200px;">Reference / Title</th>
+                                    <th scope="col" style="min-width: 180px;">Target Organization</th>
+                                    <th scope="col" style="min-width: 120px;">Submitted</th>
+                                    <th scope="col" style="min-width: 140px;">Amount / Offer</th>
+                                    <th scope="col" style="min-width: 130px;">Status</th>
+                                    <th scope="col" class="text-end" style="min-width: 120px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.SentItems)
+                                {
+                                    <tr class="@(item.RequiresAction ? "table-warning" : "")">
+                                        <td>
+                                            <span class="badge @(item.WorkflowType == "ManufacturingRequest" ? "bg-primary" : "bg-info")" style="font-size: 0.72rem;">
+                                                @item.WorkflowTypeLabel
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold d-block text-dark">@item.Title</span>
+                                            <small class="text-muted">ID: #@item.Id</small>
+                                        </td>
+                                        <td>
+                                            <span class="d-block text-dark">@item.CounterpartyName</span>
+                                            <small class="text-muted">@item.CounterpartyRole</small>
+                                        </td>
+                                        <td>
+                                            <span class="small text-muted">@item.CreatedAt.ToString("dd MMM yyyy")</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-semibold text-dark">@item.FormattedAmount</span>
+                                        </td>
+                                        <td>
+                                            <partial name="_StatusBadge" model="item.Status" />
+                                            @if (item.RequiresAction && !string.IsNullOrEmpty(item.ActionPrompt))
+                                            {
+                                                <small class="d-block text-danger fw-bold mt-1">@item.ActionPrompt</small>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="@item.DetailsUrl" class="btn btn-sm btn-outline-primary text-nowrap">
+                                                @(item.RequiresAction ? "Respond →" : "View Details")
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- RECEIVED TAB CONTENT -->
+                @if (!Model.ReceivedItems.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <span class="fs-1 d-block mb-2">📥</span>
+                        <h2 class="h5 fw-bold mb-1">No received items</h2>
+                        @if (Model.UserRole == "Brand")
+                        {
+                            <p class="small mx-auto mb-3" style="max-width: 26rem;">
+                                Brand owners submit requests to factories and orders to suppliers. Counter-offers received from factories are tracked under your <strong>Sent Items</strong> tab.
+                            </p>
+                            <a asp-action="Requests" asp-route-tab="sent" class="btn btn-sm btn-outline-primary">
+                                View Sent Requests
+                            </a>
+                        }
+                        else
+                        {
+                            <p class="small mx-auto mb-3" style="max-width: 26rem;">
+                                You currently have no incoming production requests or buyer orders awaiting review.
+                            </p>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase text-muted">
+                                <tr>
+                                    <th scope="col" style="min-width: 140px;">Type</th>
+                                    <th scope="col" style="min-width: 200px;">Reference / Title</th>
+                                    <th scope="col" style="min-width: 180px;">Requesting Client</th>
+                                    <th scope="col" style="min-width: 120px;">Date Received</th>
+                                    <th scope="col" style="min-width: 140px;">Proposed Price</th>
+                                    <th scope="col" style="min-width: 130px;">Status</th>
+                                    <th scope="col" class="text-end" style="min-width: 120px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ReceivedItems)
+                                {
+                                    <tr class="@(item.RequiresAction ? "table-warning" : "")">
+                                        <td>
+                                            <span class="badge @(item.WorkflowType == "ManufacturingRequest" ? "bg-primary" : "bg-info")" style="font-size: 0.72rem;">
+                                                @item.WorkflowTypeLabel
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold d-block text-dark">@item.Title</span>
+                                            <small class="text-muted">ID: #@item.Id</small>
+                                        </td>
+                                        <td>
+                                            <span class="d-block text-dark">@item.CounterpartyName</span>
+                                            <small class="text-muted">Client @item.CounterpartyRole</small>
+                                        </td>
+                                        <td>
+                                            <span class="small text-muted">@item.CreatedAt.ToString("dd MMM yyyy")</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-semibold text-dark">@item.FormattedAmount</span>
+                                        </td>
+                                        <td>
+                                            <partial name="_StatusBadge" model="item.Status" />
+                                            @if (item.RequiresAction && !string.IsNullOrEmpty(item.ActionPrompt))
+                                            {
+                                                <small class="d-block text-danger fw-bold mt-1">@item.ActionPrompt</small>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="@item.DetailsUrl" class="btn btn-sm @(item.RequiresAction ? "btn-warning" : "btn-outline-primary") text-nowrap">
+                                                @(item.RequiresAction ? "Review & Respond →" : "View Details")
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
