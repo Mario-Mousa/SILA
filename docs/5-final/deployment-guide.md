@@ -226,3 +226,4 @@ Before declaring production readiness or beginning the final jury presentation:
 - [ ] **13. Fresh Backup Generated**: `.bak` snapshot saved and logged in `docs/5-final/backup-restore-guide.md`.
 - [ ] **14. Offline Fallback Ready**: Presenter machine verified to launch `http://localhost:5093` within 10 seconds.
 - [ ] **15. Release Tagged**: Release tag (e.g. `v1.0.0`) committed on the `main` branch on GitHub.
+
