@@ -1,10 +1,10 @@
 @* ═══════════ HANDOFF ═══════════════════════════════════
-   Task:        T2.3 | Owner: P3 | Status: DONE
-   What exists: Public directory of Verified Clothing Factories with keyword search, city filter, and pagination
-   What is left: // TODO(T3.3): Link factory card directly to Manufacturing Request submission form
-   Depends on:  T1.1 (Organization, VerificationStatus), T2.2 (IOrganizationService.GetFactoriesAsync), T1.3 (_Pagination, _StatusBadge)
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Public directory of Verified Clothing Factories with keyword search, city filter, pagination, and direct link to ManufacturingRequests
+   What is left: none
+   Depends on:  T1.1 (Organization, VerificationStatus), T2.2 (IOrganizationService.GetFactoriesAsync), T1.3 (_Pagination, _StatusBadge), T3.3 (ManufacturingRequestsController.Create)
    Used by:     Public visitors, Brand Owners looking to produce apparel
-   How to test: Visit /Home/Factories; test search, city filter, and verify unverified factories never appear
+   How to test: Visit /Home/Factories; test search, city filter, and verify unverified factories never appear; click "Send Request" as Brand to verify navigation to ManufacturingRequests/Create
    Notes:       Enforces Part 4.1 & T2.3 Acceptance Criteria: only VerificationStatus.Verified factories are displayed
    ═══════════════════════════════════════════════════════ *@
 @using SILA.Web.Models.Enums
@@ -124,7 +124,7 @@
                         </div>
                         @if (User.IsInRole("Brand"))
                         {
-                            <a asp-controller="Requests" asp-action="Create" asp-route-factoryId="@factory.Id" class="btn btn-sm btn-primary">
+                            <a asp-controller="ManufacturingRequests" asp-action="Create" asp-route-factoryId="@factory.Id" class="btn btn-sm btn-primary">
                                 Send Request &rarr;
                             </a>
                         }

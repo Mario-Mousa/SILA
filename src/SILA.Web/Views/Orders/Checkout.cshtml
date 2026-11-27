@@ -1,10 +1,10 @@
 @* ═══════════ HANDOFF ═══════════════════════════════════
-   Task:        T3.2 | Owner: P1 | Status: DONE
-   What exists: Material Order checkout and summary view with quantity selection and price preview in EGP
-   What is left: // TODO(T3.4): Wire into unified Sent/Received requests and orders dashboard
-   Depends on:  T1.1 (MaterialListing), T3.2 (OrdersController, OrderCheckoutViewModel)
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Material Order checkout and summary view with quantity selection, EGP price preview, and validation feedback
+   What is left: none
+   Depends on:  T1.1 (MaterialListing), T3.2 (OrdersController, OrderCheckoutViewModel), _ValidationSummary
    Used by:     Brand and Factory users placing orders
-   How to test: Visit /Orders/Checkout?listingId={id}&quantity={qty} -> submit order -> redirect to Details
+   How to test: Visit /Orders/Checkout?listingId={id}&quantity={qty} -> submit order -> redirect to Details; test out-of-range quantities
    Notes:       BR-01: Quantities are positive. BR-02: Single supplier. BR-04: Line snapshots. D-10: Currency in EGP.
    ═══════════════════════════════════════════════════════ *@
 @using SILA.Web.Models.ViewModels.Orders
@@ -37,7 +37,7 @@
         </div>
     }
 
-    <div asp-validation-summary="All" class="validation-summary"></div>
+    <partial name="_ValidationSummary" />
 
     <form asp-controller="Orders" asp-action="SubmitCheckout" method="post" id="checkoutForm">
         @Html.AntiForgeryToken()

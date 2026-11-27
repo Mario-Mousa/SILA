@@ -1,9 +1,12 @@
-@* HANDOFF | Task: T3.3 | Owner: P2 | Status: DONE
-   What exists: Request overview, offer timeline and state-gated controls for both parties.
-   What is left: // TODO(T4.3): Check final copy, contrast and breakpoints.
-   Depends on: T1.1 (request statuses/offers), T2.4 (ownership), T1.3 (shared layout).
-   Used by: ManufacturingRequestsController.Details and decision redirects.
-*@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Request overview, offer timeline, status badge, and state-gated controls for both parties with responsive layouts
+   What is left: none
+   Depends on:  T1.1 (request statuses/offers), T2.4 (ownership), T1.3 (shared layout), T4.3 (_StatusBadge)
+   Used by:     ManufacturingRequestsController.Details and decision redirects
+   How to test: Visit /ManufacturingRequests/Details/{id} as Brand and Factory; verify status badge colors, responsive cards on mobile, and decision form submissions
+   Notes:       SILA forest/sand design tokens, D-10 EGP currency consistency
+   ═══════════════════════════════════════════════════════ *@
 @model SILA.Web.Models.ViewModels.ManufacturingRequests.ManufacturingRequestDetailsViewModel
 @{
     ViewData["Title"] = $"Manufacturing Request #{Model.Id}";
@@ -15,7 +18,7 @@
         <h1 class="h2 mb-2">Request #@Model.Id · @Model.ProductType</h1>
         <p class="text-muted mb-0">@Model.BrandName <span aria-hidden="true">→</span> @Model.FactoryName</p>
     </div>
-    <span class="status-badge" aria-label="Status: @Model.Status">@Model.Status</span>
+    <partial name="_StatusBadge" model="Model.Status" />
 </div>
 
 @if (TempData["SuccessMessage"] is string successMessage)

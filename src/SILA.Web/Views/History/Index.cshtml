@@ -104,7 +104,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center gap-1 flex-wrap">
-                                            <span class="status-badge small">@entry.FromStatus</span>
+                                            <partial name="_StatusBadge" model="entry.FromStatus" />
                                             <span class="text-muted">&rarr;</span>
                                             <partial name="_StatusBadge" model="entry.ToStatus" />
                                         </div>

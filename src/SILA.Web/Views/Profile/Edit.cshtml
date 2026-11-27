@@ -1,3 +1,12 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Edit Organization Profile form with role-specific verification fields, client/server validation, and accessible feedback
+   What is left: none
+   Depends on:  T1.1 (Organization, OrganizationType), T2.2 (ProfileController, EditProfileViewModel), _ValidationSummary
+   Used by:     All authenticated organization owners
+   How to test: Visit /Profile/Edit; verify role-specific fields (tax card, portfolio, license); test validation errors on required fields
+   Notes:       SILA forest/sand design tokens, clean field-level error messages
+   ═══════════════════════════════════════════════════════ *@
 @using SILA.Web.Models.Enums
 @model SILA.Web.Models.ViewModels.Profile.EditProfileViewModel
 @{

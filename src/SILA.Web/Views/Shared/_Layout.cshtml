@@ -1,10 +1,12 @@
-@* HANDOFF | Task: T1.3 | Owner: P3 | Status: IN-PROGRESS
-   What exists: Shared SILA shell with role-aware navigation and responsive content area.
-   What is left: Bind unread notification count when T2.4 is available.
-   Depends on: T1.2 (Identity roles), T2.3 (public/auth pages), T2.4 (notification count).
-   Used by: T2.3, T3.1, T3.4, T4.3
-   TODO(T2.4): Replace the notification bell placeholder with the unread count endpoint.
-*@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Shared SILA shell with role-aware navigation, dynamic notification bell, Orders link for buyers/suppliers, and responsive content area
+   What is left: none
+   Depends on:  T1.2 (Identity roles), T2.3 (public/auth pages), T2.4 (notification count), T3.2 (Orders), T3.4 (Requests/Dashboards)
+   Used by:     All web views
+   How to test: Log in as Brand, Factory, Supplier, Admin, and visit as anonymous; verify correct nav links appear including Orders and Requests
+   Notes:       SILA forest/sand design system, accessible skip-link, and mobile-responsive navbar
+   ═══════════════════════════════════════════════════════ *@
 @{
     var isAuthenticated = User?.Identity?.IsAuthenticated == true;
     var isAdmin = User?.IsInRole("Admin") == true;
@@ -43,7 +45,14 @@
                             {
                                 <li class="nav-item"><a class="nav-link" asp-controller="Materials" asp-action="Manage">My listings</a></li>
                             }
-                            <li class="nav-item"><a class="nav-link" asp-controller="Requests" asp-action="Index">Requests</a></li>
+                            @if (isBrand || isFactory || isSupplier)
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Orders" asp-action="Index">Orders</a></li>
+                            }
+                            @if (isBrand || isFactory || isSupplier)
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="Requests">Requests</a></li>
+                            }
                             <li class="nav-item"><a class="nav-link" asp-controller="Notifications" asp-action="Index">Notifications <partial name="_NotificationBell" /></a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Profile" asp-action="Index">Profile</a></li>
                             @if (isAdmin)
