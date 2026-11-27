@@ -1,10 +1,10 @@
 // ═══════════ HANDOFF ═══════════════════════════════════
-// Task:        T2.3 | Owner: P3 | Status: DONE
-// What exists: Client-side UI enhancements, validation helpers, and interactive components
+// Task:        T4.3 | Owner: P3 | Status: DONE
+// What exists: Client-side UI enhancements, validation helpers, responsive table scroll indicators, and interactive components
 // What is left: none
 // Depends on:  Bootstrap 5, jQuery, jQuery Validation
 // Used by:     All views
-// How to test: Submit invalid forms; verify focus moves to first invalid control; test role card toggles
+// How to test: Submit invalid forms; verify focus moves to first invalid control; test alerts auto-dismiss; verify table responsive scroll
 // Notes:       Maintains accessibility focus ring and graceful enhancement
 // ═══════════════════════════════════════════════════════
 

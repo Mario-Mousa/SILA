@@ -1,2 +1,10 @@
-@* Use inside a form. Field-level messages still belong beside their inputs. *@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Accessible model validation summary partial with live announcement
+   What is left: none
+   Depends on:  ASP.NET Core MVC TagHelpers, SILA Validation Styling
+   Used by:     All form views across SILA
+   How to test: Submit invalid forms; verify model-level error messages appear inside alert box with polite aria-live
+   Notes:       Hidden when empty via CSS; field-level messages appear alongside inputs
+   ═══════════════════════════════════════════════════════ *@
 <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert" aria-live="polite"></div>

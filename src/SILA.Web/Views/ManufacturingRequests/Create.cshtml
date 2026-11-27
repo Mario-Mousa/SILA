@@ -1,9 +1,12 @@
-@* HANDOFF | Task: T3.3 | Owner: P2 | Status: DONE
-   What exists: Brand Owner submission form for one Verified target factory.
-   What is left: // TODO(T4.3): Check final copy, contrast and breakpoints.
-   Depends on: T1.1 (request fields), T2.2 (verified factory directory), T1.3 (shared layout).
-   Used by: ManufacturingRequestsController.Create.
-*@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Brand Owner submission form for one Verified target factory with responsive layout, field-level error feedback, and accessible inputs
+   What is left: none
+   Depends on:  T1.1 (request fields), T2.2 (verified factory directory), T1.3 (shared layout), _ValidationSummary
+   Used by:     ManufacturingRequestsController.Create
+   How to test: Visit /ManufacturingRequests/Create as Brand; test invalid submissions (missing factory, negative offer, empty product type) to verify validation feedback
+   Notes:       SILA forest/sand design tokens, D-10 EGP currency per unit
+   ═══════════════════════════════════════════════════════ *@
 @model SILA.Web.Models.ViewModels.ManufacturingRequests.CreateManufacturingRequestViewModel
 @{
     ViewData["Title"] = "New Manufacturing Request";

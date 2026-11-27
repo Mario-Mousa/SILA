@@ -1,0 +1,56 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Custom 404 Not Found error view matching SILA forest/sand theme with quick navigation
+   What is left: none
+   Depends on:  SILA UI Tokens
+   Used by:     Resource not found handling and dead-link recovery
+   How to test: Visit non-existent route or resource; verify 404 view with SILA branding and navigation
+   Notes:       SILA forest/sand design tokens, graceful recovery
+   ═══════════════════════════════════════════════════════ *@
+@{
+    ViewData["Title"] = "404 - Page Not Found";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card p-4 p-md-5 text-center shadow-sm border">
+            <!-- Icon Box -->
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px; background: var(--sila-sand); color: var(--sila-forest);">
+                    <span class="fs-1" aria-hidden="true">🔍</span>
+                </div>
+            </div>
+
+            <!-- Heading -->
+            <h1 class="h3 fw-bold mb-2" style="color: var(--sila-forest);">404 - Page Not Found</h1>
+            <p class="text-muted mb-4">
+                The page, material listing, or order request you are looking for does not exist, has been removed, or is temporarily unavailable.
+            </p>
+
+            <div class="alert alert-light border text-start p-3 mb-4" style="background-color: var(--sila-sand-light); border-color: var(--sila-line) !important;">
+                <p class="mb-1 small fw-semibold text-forest">Helpful Suggestions:</p>
+                <ul class="mb-0 ps-3 small text-muted">
+                    <li>Double check the web address or link for typographical errors.</li>
+                    <li>If you followed an older order link, check your active dashboard.</li>
+                    <li>Search for materials in our public catalog.</li>
+                </ul>
+            </div>
+
+            <!-- Recovery Navigation Buttons -->
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                    Return to Home
+                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">
+                        Go to Dashboard
+                    </a>
+                }
+                <a asp-controller="Materials" asp-action="Index" class="btn btn-outline-secondary">
+                    Browse Materials
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

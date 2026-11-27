@@ -1,6 +1,32 @@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Unified status badge partial supporting MaterialOrderStatus, ManufacturingRequestStatus, and VerificationStatus
+   What is left: none
+   Depends on:  T1.3 (SILA Design System tokens)
+   Used by:     All views across Orders, Requests, Dashboards, Materials, Admin
+   How to test: Pass various statuses (PendingReview, PendingApproval, Confirmed, Accepted, Dispatched, CounterOffered, Delivered, Rejected, Cancelled, Verified, Unverified); verify colored pill badges render with matching CSS classes
+   Notes:       Color coding: Pending=warning, Confirmed/Accepted/Verified=success, Dispatched/CounterOffered=info, Delivered=primary, Rejected=danger, Cancelled/Unverified=secondary
+   ═══════════════════════════════════════════════════════ *@
 @model object
 @{
-    // Pass the enum value itself; the visible name stays identical to the enum member.
     var state = Model?.ToString() ?? string.Empty;
+    var badgeClass = state switch
+    {
+        "Pending" or "PendingReview" or "PendingApproval" => "status-badge-warning",
+        "Confirmed" or "Accepted" or "Verified" => "status-badge-success",
+        "Dispatched" or "CounterOffered" => "status-badge-info",
+        "Delivered" => "status-badge-primary",
+        "Rejected" => "status-badge-danger",
+        "Cancelled" or "Unverified" => "status-badge-secondary",
+        _ => "status-badge-default"
+    };
+
+    var displayLabel = state switch
+    {
+        "PendingApproval" => "Pending Approval",
+        "PendingReview" => "Pending Review",
+        "CounterOffered" => "Counter Offered",
+        _ => state
+    };
 }
-<span class="status-badge">@state</span>
+<span class="status-badge @badgeClass" data-status="@state">@displayLabel</span>

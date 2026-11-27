@@ -1,10 +1,10 @@
 @* ═══════════ HANDOFF ═══════════════════════════════════
-   Task:        T3.1 | Owner: P3 | Status: DONE
-   What exists: Material Details view displaying specs, verified supplier information, EGP pricing, and stock status
-   What is left: // TODO(T3.2): P1 wires direct "Place Material Order" CTA for Buyer roles
-   Depends on:  T1.1 (MaterialListing, Organization), T3.1 (MaterialDetailsViewModel), T1.3 (_StatusBadge)
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Material Details view displaying specs, verified supplier information, EGP pricing, stock status, and direct order checkout link
+   What is left: none
+   Depends on:  T1.1 (MaterialListing, Organization), T3.1 (MaterialDetailsViewModel), T1.3 (_StatusBadge), T3.2 (OrdersController.Checkout)
    Used by:     Public visitors, Brand Owners, Factory Owners, Owner Suppliers
-   How to test: Visit /Materials/Details/{id}; verify out-of-stock badge when stock is 0 (BR-06); verify supplier management actions appear only for owner (BR-07)
+   How to test: Visit /Materials/Details/{id}; verify out-of-stock badge when stock is 0 (BR-06); verify direct "Place Material Order" link navigates to Orders/Checkout; verify supplier management actions appear only for owner (BR-07)
    Notes:       BR-05: Deactivated listings hidden from buyers. BR-06: Out of stock at 0. D-10: Currency is EGP.
    ═══════════════════════════════════════════════════════ *@
 @model SILA.Web.Models.ViewModels.Materials.MaterialDetailsViewModel
@@ -210,12 +210,10 @@
                     <div class="small text-muted">per @Model.Listing.Unit</div>
                 </div>
 
-                <!-- TODO(T3.2): P1 wires direct Material Order placement -->
                 <div class="d-grid">
-                    <button type="button" class="btn btn-primary" onclick="alert('Order placement workflow will be active in Task T3.2 (P1). Direct cart & atomic order placement will connect here.');">
+                    <a asp-controller="Orders" asp-action="Checkout" asp-route-listingId="@Model.Listing.Id" class="btn btn-primary">
                         🛒 Place Material Order
-                    </button>
-                    <small class="text-muted text-center mt-2">Ready for Phase 3 T3.2 Order Service</small>
+                    </a>
                 </div>
             }
             else if (Model.IsOutOfStock)

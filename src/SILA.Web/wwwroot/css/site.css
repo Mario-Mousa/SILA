@@ -1,3 +1,13 @@
+/* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: SILA Design System styles, responsive rules (1920x1080, 1366x768, 768x1024), unified status badge color coding, and accessible form validation
+   What is left: none
+   Depends on:  Bootstrap 5.3, SILA Color Tokens
+   Used by:     All views
+   How to test: Test layout across desktop (1920x1080), laptop (1366x768), and tablet/mobile (768x1024); verify status badge colors (warning, success, info, primary, danger, secondary); submit invalid forms and verify validation highlights
+   Notes:       Enforces Part 0 compliance and T4.3 requirements
+   ═══════════════════════════════════════════════════════ */
+
 :root {
   --sila-forest: #153d35;
   --sila-forest-dark: #102e29;
@@ -49,20 +59,133 @@ a:hover { color: var(--sila-forest-dark); }
 .border-forest { border-color: var(--sila-forest) !important; }
 .cursor-pointer { cursor: pointer; }
 
-/* Forms & Validation */
+/* Status Badges - Unified Color System (T4.3) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #cbd4ce;
+  border-radius: 999px;
+  padding: .28rem .75rem;
+  background: var(--sila-sand);
+  color: var(--sila-ink);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+/* Pending: Warning (amber/yellow) */
+.status-badge-warning {
+  background: #fef7e0;
+  color: #8c5800;
+  border-color: #f7d58b;
+}
+/* Confirmed / Accepted / Verified: Success (emerald green) */
+.status-badge-success {
+  background: #e6f7ec;
+  color: #137333;
+  border-color: #a3e2b8;
+}
+/* Dispatched / CounterOffered: Info (sky blue) */
+.status-badge-info {
+  background: #e8f4fd;
+  color: #1769aa;
+  border-color: #90caf9;
+}
+/* Delivered: Primary (forest green) */
+.status-badge-primary {
+  background: color-mix(in srgb, var(--sila-forest) 14%, transparent);
+  color: var(--sila-forest-dark);
+  border-color: color-mix(in srgb, var(--sila-forest) 30%, transparent);
+}
+/* Rejected: Danger (soft red) */
+.status-badge-danger {
+  background: #fde8e8;
+  color: #c5221f;
+  border-color: #f5c2c7;
+}
+/* Cancelled / Unverified: Secondary (neutral grey) */
+.status-badge-secondary {
+  background: #f1f3f2;
+  color: #5f6368;
+  border-color: #dadce0;
+}
+/* Fallback / Default */
+.status-badge-default {
+  background: var(--sila-sand);
+  color: var(--sila-ink);
+  border-color: #cbd4ce;
+}
+
+.notification-dot { display: inline-block; width: .5rem; height: .5rem; margin-inline-start: .15rem; border-radius: 50%; background: var(--sila-clay); vertical-align: middle; }
+
+/* Forms & Validation (T4.3 Enhanced) */
 .form-label { font-weight: 650; margin-bottom: .35rem; font-size: .95rem; }
 .form-control, .form-select { min-height: 2.9rem; border-color: #cbd4ce; border-radius: .65rem; }
 .form-control:focus, .form-select:focus, .form-check-input:focus, .btn:focus-visible, a:focus-visible, button:focus-visible { border-color: var(--sila-focus); outline: 3px solid color-mix(in srgb, var(--sila-focus) 32%, transparent); outline-offset: 2px; box-shadow: none; }
 .text-muted, .form-text { color: var(--sila-muted) !important; }
-.status-badge { display: inline-flex; align-items: center; border: 1px solid #cbd4ce; border-radius: 999px; padding: .24rem .7rem; background: var(--sila-sand); color: var(--sila-ink); font-size: .78rem; font-weight: 700; letter-spacing: .01em; }
-.notification-dot { display: inline-block; width: .5rem; height: .5rem; margin-inline-start: .15rem; border-radius: 50%; background: var(--sila-clay); vertical-align: middle; }
-.validation-summary:empty { display: none; }
-.validation-summary:not(:empty) { margin-block: 1rem; padding: .9rem 1rem; border: 1px solid #b42318; border-radius: .7rem; background: #fff4f2; color: #8f1d14; }
-.field-validation-error, .validation-summary-errors { color: #8f1d14; font-size: .88rem; font-weight: 600; margin-top: .25rem; display: block; }
-.input-validation-error { border-color: #b42318 !important; }
+
+.validation-summary { display: block; }
+.validation-summary:empty { display: none !important; }
+.validation-summary:not(:empty) {
+  margin-block: 1rem;
+  padding: .9rem 1.15rem;
+  border: 1px solid #b42318;
+  border-radius: .7rem;
+  background: #fff4f2;
+  color: #8f1d14;
+}
+.validation-summary:not(:empty) ul {
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+}
+.field-validation-error,
+.validation-summary-errors {
+  color: #8f1d14;
+  font-size: .85rem;
+  font-weight: 600;
+  margin-top: .3rem;
+  display: block;
+}
+.field-validation-valid {
+  display: none;
+}
+.input-validation-error {
+  border-color: #b42318 !important;
+  background-color: #fffbfa;
+}
+.input-validation-error:focus {
+  border-color: #b42318 !important;
+  outline: 3px solid rgba(180, 35, 24, 0.25) !important;
+}
+
 .skip-link { position: absolute; z-index: 1100; top: .5rem; left: .5rem; transform: translateY(-150%); padding: .6rem 1rem; border-radius: .5rem; background: #fff; color: var(--sila-forest); }
 .skip-link:focus { transform: translateY(0); }
 .pagination { --bs-pagination-color: var(--sila-forest); --bs-pagination-active-bg: var(--sila-forest); --bs-pagination-active-border-color: var(--sila-forest); }
+
+/* Table Responsiveness & Layout Improvements (T4.3) */
+.table-responsive {
+  border-radius: calc(var(--sila-radius) - 2px);
+  -webkit-overflow-scrolling: touch;
+}
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background: var(--sila-sand-light);
+  border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #cbd4ce;
+  border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #9aa89e;
+}
+.table > :not(caption) > * > * {
+  padding: .85rem .95rem;
+  vertical-align: middle;
+}
 
 /* Eyebrow & Hero Section */
 .sila-eyebrow { background: var(--sila-sand); color: var(--sila-forest); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .75rem; padding: .4rem .9rem; border-radius: 999px; }
@@ -92,16 +215,43 @@ a:hover { color: var(--sila-forest-dark); }
 .sila-metric-card { border: 1px solid var(--sila-line) !important; border-radius: .85rem; }
 .metric-icon { width: 2.2rem; height: 2.2rem; border-radius: .55rem; background: var(--sila-sand); display: grid; place-items: center; font-size: 1.1rem; }
 
-/* Responsive Breakpoints (Desktop 1920x1080 / 1366x768, Tablet 768x1024) */
-@media (min-width: 1200px) {
-  .page-shell { max-width: 1240px; }
+/* Empty States */
+.sila-empty-state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--sila-sand-light);
+  border-radius: var(--sila-radius);
+  border: 1px solid var(--sila-line);
+}
+.sila-empty-state-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+  opacity: .85;
+}
+
+/* Responsive Breakpoints & Viewport Polish */
+@media (min-width: 1400px) {
+  .page-shell { max-width: 1320px; }
+}
+
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .page-shell { max-width: 1220px; }
 }
 
 @media (max-width: 991.98px) {
   .sila-hero-title { font-size: 2.2rem; }
 }
 
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Tablet optimization (768x1024) */
+  .page-shell { padding-top: 1.75rem; padding-bottom: 3rem; }
+  .sila-metric-card { min-width: 100%; }
+  .table-responsive table { font-size: 0.92rem; }
+}
+
 @media (max-width: 767.98px) {
+  /* Mobile adjustments */
   .page-shell { padding-top: 1.25rem; padding-bottom: 2.5rem; }
   .navbar-nav { align-items: stretch !important; padding: .75rem 0; }
   .navbar-nav .nav-link { padding: .65rem .25rem; }

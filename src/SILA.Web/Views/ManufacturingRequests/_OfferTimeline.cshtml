@@ -1,9 +1,12 @@
-@* HANDOFF | Task: T3.3 | Owner: P2 | Status: DONE
-   What exists: Chronological display of each Manufacturing Request offer round.
-   What is left: // TODO(T4.3): Review final date formatting and responsive spacing.
-   Depends on: T1.1 (RequestOffer); T3.3 offer history view model.
-   Used by: Views/ManufacturingRequests/Details.cshtml.
-*@
+@* ═══════════ HANDOFF ═══════════════════════════════════
+   Task:        T4.3 | Owner: P3 | Status: DONE
+   What exists: Chronological display of each Manufacturing Request offer round with responsive styling and date formatting
+   What is left: none
+   Depends on:  T1.1 (RequestOffer), T3.3 (OfferTimelineViewModel)
+   Used by:     Views/ManufacturingRequests/Details.cshtml
+   How to test: Open request details with counter-offers; verify chronological timeline steps and currency in EGP
+   Notes:       D-10: EGP currency. Clean responsive margin and typography.
+   ═══════════════════════════════════════════════════════ *@
 @model IReadOnlyList<SILA.Web.Models.ViewModels.ManufacturingRequests.OfferTimelineViewModel>
 
 @if (Model.Count == 0)
